@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HabitTracker — Productivity Dashboard
 
-## Getting Started
-
-First, run the development server:
+## 🚀 Quick Start
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Architecture
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/                          # Next.js App Router
+│   ├── layout.tsx                # Root layout (fonts, providers, SEO)
+│   ├── page.tsx                  # Main dashboard page
+│   └── globals.css               # Design system + component styles
+├── components/
+│   ├── layout/
+│   │   ├── Header.tsx            # App header (logo, search, settings)
+│   │   └── SettingsModal.tsx     # Settings panel (tabs, calendar, AI, lang)
+│   └── widgets/
+│       ├── TimeQuote.tsx         # Clock + motivational quote
+│       ├── HabitTracker.tsx      # Habit checkboxes with frequency tabs
+│       ├── TaskList.tsx          # Priority-sorted task list
+│       ├── TaskModal.tsx         # Task create/edit modal
+│       ├── AIRecommendations.tsx # AI tips (Gemini-ready)
+│       ├── ProgressCharts.tsx    # Bar, Pie, Line charts (Recharts)
+│       └── ContributionCalendar.tsx # GitHub-style activity grid
+├── hooks/
+│   ├── useSettings.ts           # Settings context + localStorage
+│   ├── useHabits.ts             # Habit CRUD + streak calculation
+│   └── useTasks.ts              # Task CRUD + sorting + filtering
+└── lib/
+    ├── types.ts                 # All TypeScript interfaces
+    ├── constants.ts             # Defaults, quotes, AI tips, icons
+    ├── storage.ts               # localStorage abstraction (swap for API later)
+    └── i18n/
+        ├── uk.ts                # Ukrainian translations
+        ├── en.ts                # English translations
+        └── useTranslation.ts    # Translation hook
+```
 
-## Learn More
+## 🎨 Design
 
-To learn more about Next.js, take a look at the following resources:
+- **Color scheme**: Light background (#F5F5F7) + coral accent (#E85D4A)
+- **Typography**: Inter (Google Fonts)
+- **Layout**: Responsive grid — 1 col (mobile) → 2 col (tablet) → 3 col (desktop)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## ⚙️ Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Framework**: Next.js 15 (App Router, Static Export)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS + vanilla CSS design system
+- **Charts**: Recharts
+- **Icons**: Lucide React
+- **Storage**: localStorage (backend-ready abstraction)
+- **i18n**: Custom hook (UK/EN)
 
-## Deploy on Vercel
+## 📦 Build & Deploy
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+# Static export for GitHub Pages
+npm run build
+# Output: /out directory
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🔮 Roadmap
+
+- [ ] Backend API (Node.js/Express or Supabase)
+- [ ] User authentication
+- [ ] Gemini AI integration for personalized recommendations
+- [ ] Notifications/reminders (Service Worker)
+- [ ] Subtasks support
+- [ ] Drag-and-drop widget layout
+- [ ] Dark mode

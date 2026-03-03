@@ -37,17 +37,13 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
         </div>
 
         {/* --- Tab Visibility --- */}
-        <div style={{ marginBottom: 24 }}>
+        <div className="settings-section">
           <label className="label" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
             <Eye size={14} /> {t('tabVisibility')}
           </label>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {tabOptions.map(opt => (
-              <div key={opt.key} style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '8px 12px', background: 'var(--color-bg)',
-                borderRadius: 'var(--radius-md)'
-              }}>
+              <div key={opt.key} className="settings-row">
                 <span style={{ fontSize: 14, fontWeight: 500 }}>{opt.label}</span>
                 <label className="toggle">
                   <input
@@ -63,37 +59,33 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
         </div>
 
         {/* --- Show Calendar --- */}
-        <div style={{
-          marginBottom: 24, display: 'flex',
-          alignItems: 'center', justifyContent: 'space-between',
-          padding: '12px 16px', background: 'var(--color-bg)',
-          borderRadius: 'var(--radius-md)'
-        }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 500 }}>
-            <Calendar size={16} /> {t('showCalendar')}
-          </label>
-          <label className="toggle">
-            <input
-              type="checkbox"
-              checked={settings.showCalendar}
-              onChange={() => updateSettings({ showCalendar: !settings.showCalendar })}
-            />
-            <span className="toggle-slider" />
-          </label>
+        <div className="settings-section">
+          <div className="settings-row">
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 500 }}>
+              <Calendar size={16} /> {t('showCalendar')}
+            </label>
+            <label className="toggle">
+              <input
+                type="checkbox"
+                checked={settings.showCalendar}
+                onChange={() => updateSettings({ showCalendar: !settings.showCalendar })}
+              />
+              <span className="toggle-slider" />
+            </label>
+          </div>
         </div>
 
         {/* --- AI Mode --- */}
-        <div style={{ marginBottom: 24 }}>
+        <div className="settings-section">
           <label className="label" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
             <Sparkles size={14} /> {t('aiMode')}
           </label>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="settings-buttons">
             {(['general', 'personalized'] as AIMode[]).map(mode => (
               <button
                 key={mode}
                 className={`btn ${settings.aiMode === mode ? 'btn-primary' : 'btn-secondary'}`}
                 onClick={() => updateSettings({ aiMode: mode })}
-                style={{ flex: 1 }}
               >
                 {mode === 'general' ? t('aiGeneral') : t('aiPersonalized')}
               </button>
@@ -106,7 +98,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
           <label className="label" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
             <Globe size={14} /> {t('language')}
           </label>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="settings-buttons">
             {([
               { key: 'uk' as Language, label: t('ukrainian'), flag: '🇺🇦' },
               { key: 'en' as Language, label: t('english'), flag: '🇬🇧' },
@@ -115,7 +107,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                 key={lang.key}
                 className={`btn ${settings.language === lang.key ? 'btn-primary' : 'btn-secondary'}`}
                 onClick={() => updateSettings({ language: lang.key })}
-                style={{ flex: 1, gap: 8 }}
+                style={{ gap: 8 }}
               >
                 <span>{lang.flag}</span> {lang.label}
               </button>

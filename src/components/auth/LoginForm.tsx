@@ -6,7 +6,7 @@ import { useToast } from "@/context/ToastContext";
 import { Mail, Lock, Loader2 } from "lucide-react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 interface LoginFormProps {

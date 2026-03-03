@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React from 'react';
 import { useSettings } from '@/hooks/useSettings';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { GENERAL_AI_RECOMMENDATIONS } from '@/lib/constants';
 import { AIRecommendation } from '@/lib/types';
 import { Sparkles, RefreshCw } from 'lucide-react';
+import {useQuery} from "@tanstack/react-query";
 
 // TODO: When Gemini API is connected, replace getRecommendations with actual API call
 // import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -30,63 +31,60 @@ async function getRecommendations(mode: 'general' | 'personalized'): Promise<AIR
 export default function AIRecommendations() {
   const { t } = useTranslation();
   const { settings } = useSettings();
-  const [recommendations, setRecommendations] = useState<AIRecommendation[]>([]);
-  const [loading, setLoading] = useState(false);
 
-  const loadRecommendations = async () => {
-    setLoading(true);
-    const recs = await getRecommendations(settings.aiMode);
-    // Show random 3
-    const shuffled = [...recs].sort(() => 0.5 - Math.random()).slice(0, 3);
-    setRecommendations(shuffled);
-    setLoading(false);
-  };
+  const {
+    data: recommendations = [],
+    isLoading,
+    refetch,
+    isFetching,
+  } = useQuery({
+    queryKey: ['recommendations', settings.aiMode],
+    queryFn: async () => {
+      const recs = await getRecommendations(settings.aiMode);
 
-  useEffect(() => {
-    loadRecommendations();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.aiMode]);
+      return [...recs]
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 3);
+    },
+  });
 
   return (
-    <div className="card">
-      <div className="card-header">
-        <div className="card-title">
-          <Sparkles size={18} color="var(--color-primary)" />
+    <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)] border border-[var(--color-border-light)] p-5 transition-all hover:shadow-[var(--shadow-md)] h-full flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+          <Sparkles size={18} className="text-[var(--color-primary)]" />
           {t('aiRecommendations')}
         </div>
         <button
-          className="btn btn-ghost btn-sm"
-          onClick={loadRecommendations}
-          style={{ transition: 'transform 0.3s' }}
+          className="p-1.5 text-[var(--color-text-secondary)] hover:bg-[var(--color-bg)] rounded-full transition-all active:scale-90"
+          onClick={()=>refetch()}
         >
-          <RefreshCw size={14} className={loading ? 'spin' : ''} />
+          <RefreshCw
+            size={14}
+            className={
+              isFetching ? 'animate-spin text-[var(--color-primary)]' : ''
+            }
+          />
         </button>
       </div>
 
       {/* Mode badge */}
-      <div style={{ marginBottom: 12 }}>
-        <span className="badge badge-primary" style={{ fontSize: 11 }}>
+      <div className="mb-3">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-[var(--radius-full)] bg-[var(--color-primary-bg)] text-[var(--color-primary)] text-[11px] font-bold uppercase tracking-wider">
           {settings.aiMode === 'general' ? t('aiGeneral') : t('aiPersonalized')}
         </span>
       </div>
 
-      {/* Recommendation cards */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {/* Recommendation list */}
+      <div className="flex flex-col gap-2.5 flex-1">
         {recommendations.map(rec => (
           <div
-            key={rec.id}
-            style={{
-              padding: '12px 16px',
-              background: 'var(--color-bg)',
-              borderRadius: 'var(--radius-md)',
-              display: 'flex',
-              gap: 12,
-              alignItems: 'flex-start',
-              transition: 'background 0.2s',
-            }}
+            key={rec?.id}
+            className="p-3 bg-[var(--color-bg)] rounded-[var(--radius-md)] flex gap-3 items-start hover:bg-[var(--color-surface-hover)] transition-colors border border-transparent hover:border-[var(--color-border-light)]"
           >
-            <span style={{ fontSize: 22, flexShrink: 0, lineHeight: 1 }}>{rec.icon}</span>
-            <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+            <span className="text-2xl flex-shrink-0 leading-none">{rec?.icon}</span>
+            <p className="m-0 text-[13px] text-[var(--color-text-secondary)] leading-relaxed">
               {rec.text}
             </p>
           </div>
@@ -94,13 +92,8 @@ export default function AIRecommendations() {
       </div>
 
       {/* Gemini attribution */}
-      <div style={{
-        marginTop: 16, paddingTop: 12,
-        borderTop: '1px solid var(--color-border-light)',
-        fontSize: 11, color: 'var(--color-text-muted)',
-        display: 'flex', alignItems: 'center', gap: 6
-      }}>
-        <Sparkles size={12} />
+      <div className="mt-4 pt-3 border-t border-[var(--color-border-light)] text-[11px] text-[var(--color-text-muted)] flex items-center gap-1.5">
+        <Sparkles size={12} className="opacity-70" />
         {t('poweredByGemini')}
       </div>
     </div>

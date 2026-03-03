@@ -1,8 +1,8 @@
 'use client';
 
 import { useSettings } from '@/hooks/useSettings';
-import uk, { TranslationKeys } from './uk';
-import en from './en';
+import uk, { TranslationKeys } from '@/lib/i18n/uk';
+import en from '@/lib/i18n/en';
 
 const dictionaries = { uk, en } as const;
 

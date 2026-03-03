@@ -7,6 +7,7 @@ const uk = {
   greeting: 'Привіт! Готовий до продуктивного дня?',
   searchPlaceholder: 'Почніть пошук тут...',
   settings: 'Налаштування',
+  login: 'Увійти',
 
   // Time Widget
   showMyTasks: 'Мої задачі',

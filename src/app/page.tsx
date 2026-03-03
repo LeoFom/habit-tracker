@@ -3,15 +3,6 @@
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Header from "@/components/layout/Header";
-// import {
-//   doc,
-//   setDoc,
-//   getDoc,
-//   getDocs,
-//   serverTimestamp,
-//   collection,
-// } from "firebase/firestore";
-// import { db } from "@/lib/firebase";
 import { getAllUsers } from "@/services/getAllUsers";
 import { supabase } from "@/lib/supabase/client";
 
@@ -84,7 +75,23 @@ export default function Home() {
     <main style={{ minHeight: "100vh", background: "var(--color-bg)" }}>
       <Header />
 
-      <div className="dashboard-grid">
+      <div
+        className="
+          grid grid-cols-1
+          gap-[var(--space-md)]
+          p-[var(--space-md)]
+          pl-[calc(var(--space-md)+var(--safe-left))]
+          pr-[calc(var(--space-md)+var(--safe-right))]
+          max-w-[1400px]
+          mx-auto
+
+          md:grid-cols-2
+          md:p-[24px]
+          md:gap-[20px]
+
+          xl:grid-cols-3
+        "
+      >
         {/* Row 1: Time + Quote (full width) */}
         <TimeQuote />
 

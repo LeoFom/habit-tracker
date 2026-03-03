@@ -56,114 +56,118 @@ export default function ProgressCharts() {
 
   const hasData = habits.length > 0 || tasks.length > 0;
 
+  const cardClass = "bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)] border border-[var(--color-border-light)] p-5 transition-all hover:shadow-[var(--shadow-md)] col-span-1 md:col-span-2";
+
   if (!hasData) {
     return (
-      <div className="card widget-double">
-        <div className="card-header">
-          <div className="card-title">
+      <div className={cardClass}>
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
             <span>📊</span>
             {t('progress')}
           </div>
         </div>
-        <div className="empty-state">
-          <div className="empty-state-icon">📈</div>
-          <div className="empty-state-text">
+        <div className="flex flex-col items-center justify-center py-12 text-[var(--color-text-muted)] text-center gap-3">
+          <div className="text-5xl opacity-30">📈</div>
+          <p className="text-sm max-w-[240px]">
             Додайте звички та задачі, щоб побачити ваш прогрес!
-          </div>
+          </p>
         </div>
       </div>
     );
   }
 
+  const customTooltipStyle = {
+    contentStyle: {
+      background: 'var(--color-surface)',
+      border: '1px solid var(--color-border)',
+      borderRadius: 'var(--radius-md)',
+      fontSize: '12px',
+      boxShadow: 'var(--shadow-md)'
+    },
+    itemStyle: { color: 'var(--color-text-primary)' }
+  };
+
+
   return (
-    <div className="card widget-double">
-      <div className="card-header">
-        <div className="card-title">
+    <div className={cardClass}>
+      <div className="flex items-center justify-between mb-6">
+        <div className="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
           <span>📊</span>
           {t('progress')}
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 24 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {/* Bar Chart — Weekly habits */}
-        <div>
-          <h4 style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 12 }}>
+        <div className="flex flex-col">
+          <h4 className="text-[13px] font-semibold text-[var(--color-text-secondary)] mb-4 text-center uppercase tracking-tight">
             {t('weeklyProgress')}
           </h4>
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={weeklyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
-              <XAxis dataKey="name" fontSize={11} stroke="var(--color-text-muted)" />
-              <YAxis fontSize={11} stroke="var(--color-text-muted)" />
-              <Tooltip
-                contentStyle={{
-                  background: 'var(--color-surface)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: 12,
-                }}
-              />
-              <Bar dataKey="completed" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="h-[180px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={weeklyData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" vertical={false} />
+                <XAxis dataKey="name" fontSize={11} stroke="var(--color-text-muted)" axisLine={false} tickLine={false} />
+                <YAxis fontSize={11} stroke="var(--color-text-muted)" width={25} axisLine={false} tickLine={false} />
+                <Tooltip {...customTooltipStyle} />
+                <Bar dataKey="completed" fill="var(--color-primary)" radius={[4, 4, 0, 0]} barSize={20} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Pie Chart — Tasks by priority */}
-        <div>
-          <h4 style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 12 }}>
+        <div className="flex flex-col">
+          <h4 className="text-[13px] font-semibold text-[var(--color-text-secondary)] mb-4 text-center uppercase tracking-tight">
             {t('tasksByPriority')}
           </h4>
-          <ResponsiveContainer width="100%" height={180}>
-            <PieChart>
-              <Pie
-                data={priorityData.filter(d => d.value > 0)}
-                cx="50%"
-                cy="50%"
-                innerRadius={45}
-                outerRadius={70}
-                paddingAngle={4}
-                dataKey="value"
-                label={({ name, value }) => `${name}: ${value}`}
-                labelLine={false}
-                fontSize={11}
-              >
-                {priorityData.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="h-[180px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={priorityData.filter(d => d.value > 0)}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={45}
+                  outerRadius={65}
+                  paddingAngle={5}
+                  dataKey="value"
+                  stroke="none"
+                >
+                  {priorityData.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip {...customTooltipStyle} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Line Chart — Productivity trend */}
-        <div>
-          <h4 style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 12 }}>
+        <div className="flex flex-col">
+          <h4 className="text-[13px] font-semibold text-[var(--color-text-secondary)] mb-4 text-center uppercase tracking-tight">
             {t('productivityTrend')}
           </h4>
-          <ResponsiveContainer width="100%" height={180}>
-            <LineChart data={trendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
-              <XAxis dataKey="name" fontSize={10} stroke="var(--color-text-muted)" interval={2} />
-              <YAxis fontSize={11} stroke="var(--color-text-muted)" />
-              <Tooltip
-                contentStyle={{
-                  background: 'var(--color-surface)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: 12,
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="productivity"
-                stroke="var(--color-primary)"
-                strokeWidth={2}
-                dot={{ fill: 'var(--color-primary)', r: 3 }}
-                activeDot={{ r: 5 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <div className="h-[180px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={trendData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" vertical={false} />
+                <XAxis dataKey="name" fontSize={10} stroke="var(--color-text-muted)" interval={2} axisLine={false} tickLine={false} />
+                <YAxis fontSize={11} stroke="var(--color-text-muted)" width={25} axisLine={false} tickLine={false} />
+                <Tooltip {...customTooltipStyle} />
+                <Line
+                  type="monotone"
+                  dataKey="productivity"
+                  stroke="var(--color-primary)"
+                  strokeWidth={3}
+                  dot={{ fill: 'var(--color-primary)', strokeWidth: 2, r: 3, stroke: '#fff' }}
+                  activeDot={{ r: 5, strokeWidth: 0 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
     </div>

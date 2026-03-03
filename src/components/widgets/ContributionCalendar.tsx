@@ -63,86 +63,91 @@ export default function ContributionCalendar() {
     }
   });
 
+  const getLevelClass = (level: number) => {
+    switch (level) {
+      case 1: return 'bg-[var(--color-primary)] opacity-30';
+      case 2: return 'bg-[var(--color-primary)] opacity-50';
+      case 3: return 'bg-[var(--color-primary)] opacity-80';
+      case 4: return 'bg-[var(--color-primary)]';
+      default: return 'bg-[var(--color-bg)] border border-[var(--color-border-light)]';
+    }
+  };
+
   return (
-    <div className="card widget-full">
-      <div className="card-header">
-        <div className="card-title">
+    <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)] border border-[var(--color-border-light)] p-5 transition-all hover:shadow-[var(--shadow-md)] col-span-full">
+      <div className="flex items-center justify-between mb-6">
+        <div className="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
           <span>📅</span>
           {t('activityCalendar')}
         </div>
       </div>
 
-      {/* Month labels */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: `repeat(${weeks.length}, 1fr)`,
-        marginBottom: 4,
-        paddingLeft: 28,
-      }}>
-        {monthLabels.map((m, i) => (
+      {/* Scrollable container */}
+      <div className="overflow-x-auto pb-4 custom-scrollbar">
+        <div className="inline-block md:min-w-full">
+
+          {/* Month labels */}
           <div
-            key={i}
+            className="grid mb-1 pl-7"
             style={{
-              gridColumn: m.col + 1,
-              fontSize: 10,
-              color: 'var(--color-text-muted)',
+              gridTemplateColumns: `repeat(${weeks.length}, minmax(12px, 1fr))`,
+              width: `${weeks.length * 14}px`
             }}
           >
-            {m.label}
-          </div>
-        ))}
-      </div>
-
-      <div style={{ display: 'flex', gap: 4 }}>
-        {/* Day labels */}
-        <div style={{
-          display: 'flex', flexDirection: 'column',
-          gap: 3, paddingRight: 4, justifyContent: 'space-around'
-        }}>
-          {[t('mon'), '', t('wed'), '', t('fri'), '', ''].map((d, i) => (
-            <div key={i} style={{ fontSize: 9, color: 'var(--color-text-muted)', height: 10, lineHeight: '10px' }}>
-              {d}
-            </div>
-          ))}
-        </div>
-
-        {/* Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: `repeat(${weeks.length}, 1fr)`,
-          gridAutoRows: '1fr',
-          gap: 3,
-          flex: 1,
-        }}>
-          {weeks.map((week, wi) =>
-            week.map((day, di) => (
+            {monthLabels.map((m, i) => (
               <div
-                key={`${wi}-${di}`}
-                className={`contribution-cell level-${day.level}`}
-                title={`${day.date}: ${day.count} activities`}
-                style={{
-                  gridColumn: wi + 1,
-                  gridRow: di + 1,
-                  minHeight: 10,
-                }}
-              />
-            ))
-          )}
+                key={i}
+                className="text-[10px] text-[var(--color-text-muted)] whitespace-nowrap"
+                style={{ gridColumn: m.col + 1 }}
+              >
+                {m.label}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex gap-2" style={{ width: `${weeks.length * 14 + 28}px` }}>
+            {/* Day labels */}
+            <div className="flex flex-col gap-[3px] pr-1.5 justify-around flex-shrink-0">
+              {[t('mon'), '', t('wed'), '', t('fri'), '', ''].map((d, i) => (
+                <div key={i} className="text-[9px] text-[var(--color-text-muted)] h-[10px] leading-[10px]">
+                  {d}
+                </div>
+              ))}
+            </div>
+
+            {/* Grid */}
+            <div
+              className="grid gap-[3px] flex-1"
+              style={{
+                gridTemplateColumns: `repeat(${weeks.length}, 10px)`,
+                gridTemplateRows: `repeat(7, 10px)`
+              }}
+            >
+              {weeks.map((week, wi) =>
+                week.map((day, di) => (
+                  <div
+                    key={`${wi}-${di}`}
+                    title={`${day.date}: ${day.count} activities`}
+                    className={`w-[10px] h-[10px] rounded-[2px] transition-colors hover:ring-1 hover:ring-[var(--color-primary)] cursor-pointer ${getLevelClass(day.level)}`}
+                    style={{
+                      gridColumn: wi + 1,
+                      gridRow: di + 1,
+                    }}
+                  />
+                ))
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Legend */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 4,
-        justifyContent: 'flex-end', marginTop: 12,
-        fontSize: 10, color: 'var(--color-text-muted)'
-      }}>
+      <div className="flex items-center justify-end gap-1.5 mt-4 text-[10px] text-[var(--color-text-muted)]">
         <span>{t('lessActive')}</span>
         {[0, 1, 2, 3, 4].map(level => (
           <div
             key={level}
-            className={`contribution-cell level-${level}`}
-            style={{ width: 10, height: 10, borderRadius: 2 }}
+            className={`w-[10px] h-[10px] rounded-[2px] ${getLevelClass(level)}`}
           />
         ))}
         <span>{t('moreActive')}</span>

@@ -9,6 +9,7 @@ const en: Record<TranslationKeys, string> = {
   greeting: 'Hey! Ready for a productive day?',
   searchPlaceholder: 'Start searching here...',
   settings: 'Settings',
+  login: 'Login',
 
   // Time Widget
   showMyTasks: 'My Tasks',

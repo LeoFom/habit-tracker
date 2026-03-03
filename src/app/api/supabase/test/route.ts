@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { createServerSupabase } from "../../../../../src_old/lib/supabase/server";
 
 interface UserData {
   age: number;

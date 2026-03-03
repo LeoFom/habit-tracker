@@ -1,4 +1,4 @@
-import { Settings, AIRecommendation } from './types';
+import { Settings, AIRecommendation } from '@/lib/types';
 
 // ============================================================
 // Default Settings

@@ -8,7 +8,7 @@ interface UserData {
 }
 
 export async function GET() {
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
 
   const { data, error } = await supabase
     .from("example")
@@ -22,7 +22,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
 
   const body: UserData = await request.json();
 

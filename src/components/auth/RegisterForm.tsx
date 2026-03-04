@@ -1,17 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useToast } from '@/context/ToastContext';
 import { Mail, Lock, User as UserIcon, Loader2 } from 'lucide-react';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
 
 interface RegisterFormProps {
-  onSuccess: () => void;
+  onSubmit: (data: any) => void;
 }
 
-export default function RegisterForm({ onSuccess }: RegisterFormProps) {
-  const { showToast } = useToast();
+export default function RegisterForm({ onSubmit }: RegisterFormProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -23,52 +19,59 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const validatePassword = (password: string) => {
-    if (password.length < 8) return "Password must be at least 8 characters";
-    if (!/\d/.test(password)) return "Password must contain at least one number";
-    return null;
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.name || !formData.email || !formData.password) {
-      showToast('Please fill in all fields', 'error');
-      return;
-    }
-
-    const passwordError = validatePassword(formData.password);
-    if (passwordError) {
-      showToast(passwordError, 'error');
-      return;
-    }
-
     setLoading(true);
-    try {
-      // 1. Create user
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-      
-      // 2. Update profile with name
-      await updateProfile(userCredential.user, {
-        displayName: formData.name
-      });
-
-      showToast('Account created successfully!', 'success');
-      onSuccess();
-    } catch (error: any) {
-      console.error(error);
-      let message = 'Failed to create account';
-      if (error.code === 'auth/email-already-in-use') message = 'Email is already in use';
-      if (error.code === 'auth/invalid-email') message = 'Invalid email address';
-      if (error.code === 'auth/weak-password') message = 'Password is too weak';
-      showToast(message, 'error');
-    } finally {
-      setLoading(false);
-    }
+    onSubmit(formData); // Вызываем родительскую функцию
+    setLoading(false);
   };
+
+  // const validatePassword = (password: string) => {
+  //   if (password.length < 8) return "Password must be at least 8 characters";
+  //   if (!/\d/.test(password)) return "Password must contain at least one number";
+  //   return null;
+  // };
+
+  // const handleRegister = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //
+  //   if (!formData.name || !formData.email || !formData.password) {
+  //     showToast('Please fill in all fields', 'error');
+  //     return;
+  //   }
+  //
+  //   const passwordError = validatePassword(formData.password);
+  //   if (passwordError) {
+  //     showToast(passwordError, 'error');
+  //     return;
+  //   }
+  //
+  //   setLoading(true);
+  //   try {
+  //     // 1. Create user
+  //     const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+  //
+  //     // 2. Update profile with name
+  //     await updateProfile(userCredential.user, {
+  //       displayName: formData.name
+  //     });
+  //
+  //     showToast('Account created successfully!', 'success');
+  //     onSuccess();
+  //   } catch (error: any) {
+  //     console.error(error);
+  //     let message = 'Failed to create account';
+  //     if (error.code === 'auth/email-already-in-use') message = 'Email is already in use';
+  //     if (error.code === 'auth/invalid-email') message = 'Invalid email address';
+  //     if (error.code === 'auth/weak-password') message = 'Password is too weak';
+  //     showToast(message, 'error');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
-    <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div className="input-group">
         <label style={{ fontSize: 13, fontWeight: 500, marginBottom: 6, display: 'block' }}>Full Name</label>
         <div style={{ position: 'relative' }}>

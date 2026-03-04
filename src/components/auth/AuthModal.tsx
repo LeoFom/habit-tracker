@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import {useToast} from "@/context/ToastContext";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -13,8 +15,40 @@ interface AuthModalProps {
 
 export default function AuthModal({ isOpen, onClose, initialView = 'login' }: AuthModalProps) {
   const [view, setView] = useState<'login' | 'register'>(initialView);
+  const { showToast } = useToast(); // Предположим, он есть в контексте
 
   if (!isOpen) return null;
+
+  const handleAuth = async (formData: { email: string; password: string; name?: string }, mode: 'login' | 'register') => {
+    const supabase = await getSupabaseBrowserClient();
+
+    try {
+      if (mode === 'register') {
+        const { data, error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: { full_name: formData.name } // Передаем имя в metadata
+          }
+        });
+        console.log("register - data",data)
+        if (error) throw error;
+        showToast('Check your inbox to confirm!', 'success');
+      } else {
+        const { error, data } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+        console.log("login - data", data)
+
+        if (error) throw error;
+        showToast('Signed in successfully', 'success');
+      }
+      onClose(); // Закрываем модалку при успехе
+    } catch (error: any) {
+      showToast(error.message, 'error');
+    }
+  };
 
   return (
     <div
@@ -103,11 +137,18 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
         </div>
 
         {/* Content */}
-        {view === 'login' ? (
-          <LoginForm onSuccess={() => onClose()} />
-        ) : (
-          <RegisterForm onSuccess={() => onClose()} />
-        )}
+        <div className="modal-content">
+          {view === 'login' ? (
+            <LoginForm
+              onSuccess={onClose}
+              onSubmit={(data) => handleAuth(data, 'login')}
+            />
+          ) : (
+            <RegisterForm
+              onSubmit={(data) => handleAuth(data, 'register')}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

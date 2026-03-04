@@ -4,16 +4,15 @@ import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { Mail, Lock, Loader2 } from "lucide-react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 interface LoginFormProps {
   onSuccess: () => void;
+  onSubmit: (data: any) => void ;
 }
 
-export default function LoginForm({ onSuccess }: LoginFormProps) {
+export default function LoginForm({ onSuccess, onSubmit }: LoginFormProps) {
   const { signInWithGoogle } = useAuth();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -22,41 +21,23 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     password: "",
   });
 
-  const saveUser = async (userId: string, data: any) => {
-    // 1. Создаем ссылку на документ: (база, коллекция, id)
-    const userRef = doc(db, "users", userId);
-
-    // 2. Записываем. { merge: true } защищает от затирания других полей
-    await setDoc(userRef, data, { merge: true });
-  };
+  // const saveUser = async (userId: string, data: any) => {
+  //   // 1. Создаем ссылку на документ: (база, коллекция, id)
+  //   const userRef = doc(db, "users", userId);
+  //
+  //   // 2. Записываем. { merge: true } защищает от затирания других полей
+  //   await setDoc(userRef, data, { merge: true });
+  // };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.email || !formData.password) {
-      showToast("Please fill in all fields", "error");
-      return;
-    }
-
     setLoading(true);
-    try {
-      await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      showToast("Successfully logged in!", "success");
-      onSuccess();
-    } catch (error: any) {
-      console.error(error);
-      let message = "Failed to login";
-      if (error.code === "auth/invalid-credential")
-        message = "Invalid email or password";
-      if (error.code === "auth/user-not-found") message = "User not found";
-      if (error.code === "auth/wrong-password") message = "Invalid password";
-      showToast(message, "error");
-    } finally {
-      setLoading(false);
-    }
+    onSubmit(formData); // Вызываем родительскую функцию
+    setLoading(false);
   };
 
   const handleGoogleLogin = async () => {
@@ -82,7 +63,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <form
-        onSubmit={handleEmailLogin}
+        onSubmit={handleSubmit}
         style={{ display: "flex", flexDirection: "column", gap: 16 }}
       >
         <div className="input-group">

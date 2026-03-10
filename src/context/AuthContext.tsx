@@ -7,50 +7,67 @@ import React, {
   useState,
   ReactNode,
 } from "react";
-import { auth } from "@/lib/firebase"; // Ensure this path is correct based on your file structure
-import {
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut as firebaseSignOut,
-  User,
-  UserCredential,
-  onAuthStateChanged,
-} from "firebase/auth";
+
+import { User, Session } from '@supabase/supabase-js';
+import {getSupabaseBrowserClient} from "@/lib/supabase/browser-client";
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   loading: boolean;
   // Измени void на UserCredential
-  signInWithGoogle: () => Promise<UserCredential>;
+  signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+    const initialize = async () => {
+      // 1. Ждем сам клиент
+      const supabase = await getSupabaseBrowserClient();
+
+      // 2. Получаем текущую сессию
+      const { data: { session: initialSession } } = await supabase.auth.getSession();
+      setSession(initialSession);
+      setUser(initialSession?.user ?? null);
       setLoading(false);
-    });
-    return () => unsubscribe();
+
+      // 3. Подписываемся на обновления
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        setLoading(false);
+      });
+
+      return () => subscription.unsubscribe();
+    };
+
+    initialize();
   }, []);
 
   const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    // Добавляем custom parameters, если нужно, например выбор аккаунта каждый раз
-    provider.setCustomParameters({ prompt: "select_account" });
-
-    // Возвращаем результат выполнения
-    return signInWithPopup(auth, provider);
+    const supabase = await getSupabaseBrowserClient(); // Ждем клиент здесь
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        queryParams: { prompt: 'select_account', access_type: 'offline' },
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
   };
 
-  const logout = () => firebaseSignOut(auth);
+  const logout = async () => {
+    const supabase = await getSupabaseBrowserClient(); // И здесь
+    await supabase.auth.signOut();
+  };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, session, loading, signInWithGoogle, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );

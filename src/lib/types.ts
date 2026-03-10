@@ -29,7 +29,7 @@ export interface Task {
   description?: string;
   priority: TaskPriority;
   tags: string[];
-  dueDate?: string;
+  due_date?: string;
   reminderDate?: string;
   reminderFrequency?: ReminderFrequency;
   completed: boolean;

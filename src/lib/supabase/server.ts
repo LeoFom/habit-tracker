@@ -4,22 +4,20 @@ import { createServerClient } from '@supabase/ssr'
 
 function genEnvVariables() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnnonKey =  process.env.SUPABASE_SERVICE_ROLE_KEY
+  // МАЄ БУТИ ANON_KEY для браузера/клієнта
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if(!supabaseUrl || !supabaseAnnonKey){
-    throw new Error(
-      'Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY'
-    )
+  if(!supabaseUrl || !supabaseAnonKey){
+    throw new Error('Missing URL or ANON_KEY');
   }
-
-  return { supabaseUrl, supabaseAnnonKey }
+  return { supabaseUrl, supabaseAnonKey };
 }
 
 export async function createServerSupabase() {
-  const { supabaseUrl, supabaseAnnonKey } = genEnvVariables();
+  const { supabaseUrl, supabaseAnonKey } = genEnvVariables();
   const cookiesStore = await cookies();
 
-  return createServerClient(supabaseUrl, supabaseAnnonKey, {
+  return createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
         return cookiesStore.getAll()

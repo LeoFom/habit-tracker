@@ -20,6 +20,7 @@ export default function Header() {
   const { settings, updateSettings } = useSettings();
   const { user, logout } = useAuth();
 
+  console.log("user",user)
   const [showSettings, setShowSettings] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -95,18 +96,28 @@ export default function Header() {
             {settings.language === "uk" ? "🇺🇦 UA" : "🇬🇧 EN"}
           </button>
           {user ? (
-            <button className="flex items-center gap-2 p-1 pr-3 rounded-full bg-[var(--color-bg)] border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors">
-              {user.photoURL ? (
-                <img src={user.photoURL} alt="User" className="w-8 h-8 rounded-full" />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-[var(--color-surface)] flex items-center justify-center text-[var(--color-primary)]">
-                  <UserIcon size={18} />
-                </div>
-              )}
-              <span className="hidden md:block text-sm font-semibold text-[var(--color-text-primary)]">
-                {user.displayName || 'Профіль'}
-              </span>
-            </button>
+            <div className={'flex gap-[14px]'}>
+              <button className="flex items-center gap-2 p-1 pr-3 rounded-full bg-[var(--color-bg)] border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors">
+                {false ? (
+                  <img src={'/'} alt="User" className="w-8 h-8 rounded-full" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-[var(--color-surface)] flex items-center justify-center text-[var(--color-primary)]">
+                    <UserIcon size={18} />
+                  </div>
+                )}
+                <span className="hidden md:block text-sm font-semibold text-[var(--color-text-primary)]">
+                  {user?.user_metadata?.full_name || 'Профіль'}
+                </span>
+              </button>
+              <button
+                className={`${btnIcon} text-red-500 border-red-100 hover:bg-red-50 hover:border-red-200`}
+                onClick={() => logout()}
+                title="Вийти"
+              >
+                <LogOut size={18} />
+              </button>
+            </div>
+
           ) : (
             <button className={btnPrimary} onClick={() => setShowAuthModal(true)}>
               <LogIn size={18} />

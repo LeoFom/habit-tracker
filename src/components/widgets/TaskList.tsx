@@ -7,17 +7,56 @@ import { PRIORITY_CONFIG } from '@/lib/constants';
 import { Task } from '@/lib/types';
 import { Plus, Check, Calendar } from 'lucide-react';
 import TaskModal from '@/components/widgets/TaskModal';
+import {useToast} from "@/context/ToastContext";
+
 
 export default function TaskList() {
   const { t } = useTranslation();
-  const { tasks, addTask, updateTask, removeTask, toggleTask, getSortedTasks } = useTasks();
+  const { tasks, addTask, updateTask, removeTask, toggleTask, getSortedTasks, fetchTasks, loading } = useTasks();
   const [modalTask, setModalTask] = useState<Task | null>(null);
   const [showNewModal, setShowNewModal] = useState(false);
+  const { showToast } = useToast(); // Предположим, он есть в контексте
+
+  console.log("tasks",tasks)
+  // Обробник створення
+  const handleCreate = async (newTask: any) => {
+    const res = await addTask(newTask);
+    await fetchTasks(); // Оновлюємо список після додавання
+
+    if(res?.status === 401) {
+      showToast('Будь-ласка авторизуйтесь', 'error');
+    }
+    if(res?.status === 201) {
+      showToast('Створено успішно', 'success');
+    }
+    console.log("handleCreate res",res)
+    // showToast('Check your inbox to confirm!', 'success');
+  };
+
+  // Обробник оновлення
+  const handleUpdate = async (id: string, updatedData: any) => {
+    const res = await updateTask(id, updatedData);
+
+    if (res) {
+      console.log("✅ Task updated successfully:", res);
+      // fetchTasks() вызывается внутри самого updateTask в хуке,
+      // так что здесь его можно не дублировать.
+    } else {
+      // showToast('Failed to update task', 'error');
+    }
+  };
 
   const sortedTasks = getSortedTasks();
   const completedCount = tasks.filter(t => t.completed).length;
 
   const btnPrimarySm = "inline-flex items-center justify-center gap-1 bg-[var(--color-primary)] text-white px-3 py-1 rounded-[var(--radius-full)] text-xs font-medium hover:bg-[var(--color-primary-dark)] transition-all active:scale-95";
+
+  console.log("tasks",tasks)
+  // if (loading) return (
+  //   <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)] border border-[var(--color-border-light)] p-5 transition-all hover:shadow-[var(--shadow-md)]">
+  //     Завантаження...
+  //   </div>
+  // );
 
   return (
     <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)] border border-[var(--color-border-light)] p-5 transition-all hover:shadow-[var(--shadow-md)]">
@@ -88,11 +127,14 @@ export default function TaskList() {
                 </div>
 
                 {/* Due date */}
-                {task.dueDate && (
+                {task?.due_date && ( // змінено з task.dueDate
                   <span className="flex items-center gap-1.5 text-[12px] text-[var(--color-text-muted)] whitespace-nowrap ml-4">
-                    <Calendar size={12} />
-                    {new Date(task.dueDate).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}
-                  </span>
+    <Calendar size={12} />
+                    {new Date(task?.due_date).toLocaleDateString('uk-UA', {
+                      day: 'numeric',
+                      month: 'short'
+                    })}
+  </span>
                 )}
               </div>
             );
@@ -104,7 +146,7 @@ export default function TaskList() {
         <TaskModal
           task={null}
           isNew
-          onSave={addTask}
+          onSave={handleCreate}
           onClose={() => setShowNewModal(false)}
         />
       )}
@@ -113,7 +155,7 @@ export default function TaskList() {
         <TaskModal
           task={modalTask}
           onSave={addTask}
-          onUpdate={updateTask}
+          onUpdate={handleUpdate}
           onDelete={removeTask}
           onClose={() => setModalTask(null)}
         />

@@ -9,8 +9,24 @@ import { X, Trash2, Bell, Tag } from 'lucide-react';
 interface TaskModalProps {
   task: Task | null;
   isNew?: boolean;
-  onSave: (task: Omit<Task, 'id' | 'createdAt' | 'completed'>) => void;
-  onUpdate?: (id: string, updates: Partial<Task>) => void;
+  onSave: (task: {
+    title: string;
+    description: string | null;
+    priority: "urgent" | "high" | "medium" | "low";
+    tags: string[];
+    due_date: string | null;
+    reminder_at: string | null;
+    reminder_frequency: "once" | "daily" | "weekly"
+  }) => void;
+  onUpdate?: (id: string, updates: {
+    title: string;
+    description: string | null;
+    priority: "urgent" | "high" | "medium" | "low";
+    tags: string[];
+    due_date: string | null;
+    reminder_at: string | null;
+    reminder_frequency: "once" | "daily" | "weekly"
+  }) => void;
   onDelete?: (id: string) => void;
   onClose: () => void;
 }
@@ -23,32 +39,28 @@ export default function TaskModal({ task, isNew, onSave, onUpdate, onDelete, onC
   const [priority, setPriority] = useState<TaskPriority>(task?.priority || 'medium');
   const [tags, setTags] = useState<string[]>(task?.tags || []);
   const [newTag, setNewTag] = useState('');
-  const [dueDate, setDueDate] = useState(task?.dueDate || '');
+  const [dueDate, setDueDate] = useState(task?.due_date || '');
   const [reminderDate, setReminderDate] = useState(task?.reminderDate || '');
   const [reminderFrequency, setReminderFrequency] = useState<ReminderFrequency>(task?.reminderFrequency || 'once');
 
   const handleSave = () => {
     if (!title.trim()) return;
+
+    // Створюємо об'єкт, який відповідає назвам колонок у Postgres
+    const taskPayload = {
+      title: title.trim(),
+      description: description.trim() || null,
+      priority,
+      tags,
+      due_date: dueDate || null,         // змінено з dueDate
+      reminder_at: reminderDate || null, // змінено з reminderDate
+      reminder_frequency: reminderFrequency,
+    };
+
     if (isNew) {
-      onSave({
-        title: title.trim(),
-        description: description.trim() || undefined,
-        priority,
-        tags,
-        dueDate: dueDate || undefined,
-        reminderDate: reminderDate || undefined,
-        reminderFrequency,
-      });
+      onSave(taskPayload);
     } else if (task && onUpdate) {
-      onUpdate(task.id, {
-        title: title.trim(),
-        description: description.trim() || undefined,
-        priority,
-        tags,
-        dueDate: dueDate || undefined,
-        reminderDate: reminderDate || undefined,
-        reminderFrequency,
-      });
+      onUpdate(task.id, taskPayload);
     }
     onClose();
   };
@@ -133,7 +145,12 @@ export default function TaskModal({ task, isNew, onSave, onUpdate, onDelete, onC
               className="input"
               value={newTag}
               onChange={e => setNewTag(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTag())}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  addTag();
+                }
+              }}
               placeholder={t('addTag')}
               style={{ flex: 1 }}
             />

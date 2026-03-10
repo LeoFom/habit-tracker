@@ -31,7 +31,7 @@ export default function TimeQuote() {
   const handleFetchTasks = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/supabase/test'); // Шлях до вашого GET файлу
+      const response = await fetch('/api/supabase/tasks'); // Шлях до вашого GET файлу
       if (!response.ok) throw new Error('Помилка завантаження');
 
       const data = await response.json();
@@ -44,38 +44,10 @@ export default function TimeQuote() {
     }
   };
 
-  const handleCreateTask = async () => {
-    const newUser = {
-      age: 25,
-      name: "Олександр",
-      email: "alex@example.com"
-    };
-
-    try {
-      const response = await fetch('/api/supabase/test', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newUser),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        alert("Дані успішно додано!");
-        console.log("Response:", result);
-      } else {
-        console.error("Помилка:", result.error);
-      }
-    } catch (error) {
-      console.error("Fetch error:", error);
-    }
-  };
 
   const btnBase = "inline-flex items-center justify-center gap-[6px] font-medium transition-all duration-200 cursor-pointer whitespace-nowrap active:scale-95 disabled:opacity-50";
   const btnPrimary = `${btnBase} bg-[var(--color-primary)] text-white px-4 py-2 rounded-[var(--radius-full)] text-sm hover:bg-[var(--color-primary-dark)] hover:-translate-y-[1px] hover:shadow-[0_4px_12px_rgba(232,93,74,0.3)]`;
-  const btnSecondary = `${btnBase} bg-[var(--color-bg)] text-[var(--color-text-primary)] border border-[var(--color-border)] px-4 py-2 rounded-[var(--radius-full)] hover:bg-[var(--color-surface-hover)]`;
+  // const btnSecondary = `${btnBase} bg-[var(--color-bg)] text-[var(--color-text-primary)] border border-[var(--color-border)] px-4 py-2 rounded-[var(--radius-full)] hover:bg-[var(--color-surface-hover)]`;
   const btnIcon = `${btnBase} p-2 rounded-[var(--radius-md)] bg-[var(--color-bg)] text-[var(--color-text-primary)] border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)]`;
 
   return (
@@ -92,7 +64,8 @@ export default function TimeQuote() {
         <div className="flex items-center gap-2">
           <button
             className={btnPrimary}
-            onClick={() => { /* handleCreateTask */ }}
+            onClick={() => handleFetchTasks()}
+            // onClick={() => { /* handleCreateTask */ }}
             disabled={loading}
           >
             {loading ? '...' : t('showMyTasks')}

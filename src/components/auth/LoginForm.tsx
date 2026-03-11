@@ -77,8 +77,11 @@ export default function LoginForm({ onSuccess, onSubmit }: LoginFormProps) {
             <input
               id="email"
               type="email"
+              name="email" // <--- ДОБАВЬТЕ ЭТО
               className="w-full pl-10 pr-3 py-[10px] bg-[var(--color-bg)] border border-[var(--color-border)] rounded-[var(--radius-md)] text-[16px] outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all"
               placeholder="Enter your email"
+              value={formData.email}
+              onChange={handleChange}
             />
           </div>
         </div>

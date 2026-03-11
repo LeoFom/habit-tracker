@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useHabits } from '@/hooks/useHabits';
 import { useTasks } from '@/hooks/useTasks';
 import { useTranslation } from '@/lib/i18n/useTranslation';
@@ -9,167 +9,176 @@ import { TaskPriority } from '@/lib/types';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
-  LineChart, Line,
+  LineChart, Line, Legend
 } from 'recharts';
+import { Flame, Target, TrendingUp } from 'lucide-react';
+
 
 export default function ProgressCharts() {
   const { t } = useTranslation();
   const { habits } = useHabits();
   const { tasks, getTasksByPriority } = useTasks();
 
-  // --- Bar chart: habits completed per day (last 7 days) ---
-  const weeklyData = useMemo(() => {
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
-      const dayName = date.toLocaleDateString('uk-UA', { weekday: 'short' });
-      const completed = habits.filter(h => h.completedDates.includes(dateStr)).length;
-      days.push({ name: dayName, completed, total: habits.length });
-    }
-    return days;
-  }, [habits]);
+  // Генерація масиву дат один раз
+  const last14Days = useMemo(() => {
+    return Array.from({ length: 14 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      return d.toISOString().split('T')[0];
+    }).reverse();
+  }, []);
 
-  // --- Pie chart: tasks by priority ---
+  // Оптимізовані дані для графіків
+  const stats = useMemo(() => {
+    const dailyCompletionMap: Record<string, number> = {};
+
+    // Попередній прорахунок для O(n) замість O(n^2)
+    habits.forEach(habit => {
+      habit.completed_dates?.forEach(date => {
+        dailyCompletionMap[date] = (dailyCompletionMap[date] || 0) + 1;
+      });
+    });
+
+    const weekly = last14Days.slice(-7).map(dateStr => {
+      const date = new Date(dateStr);
+      return {
+        date: dateStr,
+        name: date.toLocaleDateString('uk-UA', { weekday: 'short' }),
+        completed: dailyCompletionMap[dateStr] || 0,
+        total: habits.length
+      };
+    });
+
+    const trend = last14Days.map(dateStr => ({
+      name: new Date(dateStr).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' }),
+      productivity: dailyCompletionMap[dateStr] || 0
+    }));
+
+    return { weekly, trend };
+  }, [habits, last14Days]);
+
   const priorityData = useMemo(() => {
     return (Object.keys(PRIORITY_CONFIG) as TaskPriority[]).map(p => ({
-      name: t(p as 'urgent' | 'high' | 'medium' | 'low'),
+      name: t(p),
       value: getTasksByPriority(p).length,
       color: PRIORITY_CONFIG[p].color,
-    }));
+    })).filter(item => item.value > 0);
   }, [tasks, getTasksByPriority, t]);
 
-  // --- Line chart: productivity trend (last 14 days) ---
-  const trendData = useMemo(() => {
-    const days = [];
-    for (let i = 13; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
-      const habitsCompleted = habits.filter(h => h.completedDates.includes(dateStr)).length;
-      const dayLabel = date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' });
-      days.push({ name: dayLabel, productivity: habitsCompleted });
-    }
-    return days;
-  }, [habits]);
-
-  const hasData = habits.length > 0 || tasks.length > 0;
-
-  const cardClass = "bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)] border border-[var(--color-border-light)] p-5 transition-all hover:shadow-[var(--shadow-md)] col-span-1 md:col-span-2";
-
-  if (!hasData) {
-    return (
-      <div className={cardClass}>
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-            <span>📊</span>
-            {t('progress')}
-          </div>
-        </div>
-        <div className="flex flex-col items-center justify-center py-12 text-[var(--color-text-muted)] text-center gap-3">
-          <div className="text-5xl opacity-30">📈</div>
-          <p className="text-sm max-w-[240px]">
-            Додайте звички та задачі, щоб побачити ваш прогрес!
-          </p>
-        </div>
-      </div>
-    );
+  if (habits.length === 0 && tasks.length === 0) {
+    return <EmptyState t={t} />;
   }
 
-  const customTooltipStyle = {
-    contentStyle: {
-      background: 'var(--color-surface)',
-      border: '1px solid var(--color-border)',
-      borderRadius: 'var(--radius-md)',
-      fontSize: '12px',
-      boxShadow: 'var(--shadow-md)'
-    },
-    itemStyle: { color: 'var(--color-text-primary)' }
-  };
-
-
   return (
-    <div className={cardClass}>
-      <div className="flex items-center justify-between mb-6">
-        <div className="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-          <span>📊</span>
-          {t('progress')}
-        </div>
-      </div>
+    <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)] border border-[var(--color-border-light)] p-6 transition-all hover:shadow-[var(--shadow-md)] col-span-1 md:col-span-3">
+      <header className="flex items-center justify-between mb-8">
+        <h3 className="text-lg font-bold text-[var(--color-text-primary)] flex items-center gap-2">
+          <TrendingUp size={20} className="text-[var(--color-primary)]" />
+          {t('analyticsDashboard')}
+        </h3>
+      </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {/* Bar Chart — Weekly habits */}
-        <div className="flex flex-col">
-          <h4 className="text-[13px] font-semibold text-[var(--color-text-secondary)] mb-4 text-center uppercase tracking-tight">
-            {t('weeklyProgress')}
-          </h4>
-          <div className="h-[180px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" vertical={false} />
-                <XAxis dataKey="name" fontSize={11} stroke="var(--color-text-muted)" axisLine={false} tickLine={false} />
-                <YAxis fontSize={11} stroke="var(--color-text-muted)" width={25} axisLine={false} tickLine={false} />
-                <Tooltip {...customTooltipStyle} />
-                <Bar dataKey="completed" fill="var(--color-primary)" radius={[4, 4, 0, 0]} barSize={20} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        {/* Weekly Activity */}
+        <ChartContainer title={t('weeklyActivity')} icon={<Target size={14}/>}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={stats.weekly}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border-light)" />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} fontSize={11} tick={{fill: 'var(--color-text-muted)'}} />
+              <YAxis hide />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar
+                dataKey="completed"
+                name={t('completedHabits')}
+                fill="var(--color-primary)"
+                radius={[4, 4, 0, 0]}
+                barSize={24}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartContainer>
 
-        {/* Pie Chart — Tasks by priority */}
-        <div className="flex flex-col">
-          <h4 className="text-[13px] font-semibold text-[var(--color-text-secondary)] mb-4 text-center uppercase tracking-tight">
-            {t('tasksByPriority')}
-          </h4>
-          <div className="h-[180px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={priorityData.filter(d => d.value > 0)}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={45}
-                  outerRadius={65}
-                  paddingAngle={5}
-                  dataKey="value"
-                  stroke="none"
-                >
-                  {priorityData.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip {...customTooltipStyle} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        {/* Task Priorities */}
+        <ChartContainer title={t('taskDistribution')} icon={<Flame size={14}/>}>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={priorityData}
+                innerRadius={50}
+                outerRadius={70}
+                paddingAngle={8}
+                dataKey="value"
+                stroke="none"
+              >
+                {priorityData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+              <Legend verticalAlign="bottom" iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartContainer>
 
-        {/* Line Chart — Productivity trend */}
-        <div className="flex flex-col">
-          <h4 className="text-[13px] font-semibold text-[var(--color-text-secondary)] mb-4 text-center uppercase tracking-tight">
-            {t('productivityTrend')}
-          </h4>
-          <div className="h-[180px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" vertical={false} />
-                <XAxis dataKey="name" fontSize={10} stroke="var(--color-text-muted)" interval={2} axisLine={false} tickLine={false} />
-                <YAxis fontSize={11} stroke="var(--color-text-muted)" width={25} axisLine={false} tickLine={false} />
-                <Tooltip {...customTooltipStyle} />
-                <Line
-                  type="monotone"
-                  dataKey="productivity"
-                  stroke="var(--color-primary)"
-                  strokeWidth={3}
-                  dot={{ fill: 'var(--color-primary)', strokeWidth: 2, r: 3, stroke: '#fff' }}
-                  activeDot={{ r: 5, strokeWidth: 0 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        {/* Long-term Trend */}
+        <ChartContainer title={t('14DayTrend')} icon={<TrendingUp size={14}/>}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={stats.trend}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border-light)" />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} fontSize={10} interval={2} tick={{fill: 'var(--color-text-muted)'}} />
+              <YAxis hide />
+              <Tooltip content={<CustomTooltip />} />
+              <Line
+                type="stepAfter" // Професійний вигляд для дискретних даних (звички)
+                dataKey="productivity"
+                name={t('score')}
+                stroke="var(--color-primary)"
+                strokeWidth={3}
+                dot={false}
+                activeDot={{ r: 6, strokeWidth: 0, fill: 'var(--color-primary)' }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </ChartContainer>
       </div>
     </div>
   );
 }
+
+// Допоміжні під-компоненти для чистоти коду
+function ChartContainer({ title, children, icon }: { title: string, children: React.ReactNode, icon: React.ReactNode }) {
+  return (
+    <div className="flex flex-col h-[240px]">
+      <div className="flex items-center gap-2 mb-4 justify-center">
+        <span className="text-[var(--color-primary)] opacity-70">{icon}</span>
+        <h4 className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-widest">
+          {title}
+        </h4>
+      </div>
+      <div className="flex-1 min-h-0">{children}</div>
+    </div>
+  );
+}
+
+function EmptyState({ t }: any) {
+  return (
+    <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] p-12 border border-dashed border-[var(--color-border)] text-center">
+      <div className="text-4xl mb-4">📈</div>
+      <p className="text-[var(--color-text-secondary)] text-sm">{t('noDataToAnalyze')}</p>
+    </div>
+  );
+}
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] p-3 rounded-[var(--radius-md)] shadow-xl outline-none">
+        <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase mb-1">{label}</p>
+        <p className="text-sm font-semibold text-[var(--color-primary)]">
+          {payload[0].name}: <span className="text-[var(--color-text-primary)]">{payload[0].value}</span>
+        </p>
+      </div>
+    );
+  }
+  return null;
+};

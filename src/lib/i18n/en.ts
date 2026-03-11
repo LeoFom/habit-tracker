@@ -94,6 +94,21 @@ const en: Record<TranslationKeys, string> = {
   jan: 'Jan', feb: 'Feb', mar: 'Mar', apr: 'Apr',
   may: 'May', jun: 'Jun', jul: 'Jul', aug: 'Aug',
   sep: 'Sep', oct: 'Oct', nov: 'Nov', dec: 'Dec',
+
+  // Analytics Dashboard
+  analyticsDashboard: 'Analytics Dashboard',
+  weeklyActivity: 'Weekly Activity',
+  taskDistribution: 'Task Distribution',
+  '14DayTrend': '14-Day Progress Trend',
+
+  // Chart Elements
+  completedHabits: 'Completed Habits',
+  score: 'Productivity Score',
+
+  // Priorities (for the PieChart)
+  highPriority: 'High Priority',
+  mediumPriority: 'Medium Priority',
+  lowPriority: 'Low Priority'
 };
 
 export default en;

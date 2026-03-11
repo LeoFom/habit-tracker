@@ -12,7 +12,7 @@ export interface Habit {
   icon?: string;
   frequency: HabitFrequency;
   /** ISO date strings when habit was completed, e.g. ["2026-02-17"] */
-  completedDates: string[];
+  completed_dates: string[];
   createdAt: string;
   color?: string;
 }

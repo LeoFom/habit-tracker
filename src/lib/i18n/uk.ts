@@ -92,6 +92,21 @@ const uk = {
   jan: 'Січ', feb: 'Лют', mar: 'Бер', apr: 'Кві',
   may: 'Тра', jun: 'Чер', jul: 'Лип', aug: 'Сер',
   sep: 'Вер', oct: 'Жов', nov: 'Лис', dec: 'Гру',
+
+  // Analytics Dashboard
+  analyticsDashboard: 'Аналітичний дашборд',
+  weeklyActivity: 'Тижнева активність',
+  taskDistribution: 'Розподіл завдань',
+  '14DayTrend': 'Тренд за 14 днів',
+
+  // Chart Elements
+  completedHabits: 'Виконані звички',
+  score: 'Показник продуктивності',
+
+  // Priorities (for the PieChart)
+  highPriority: 'Високий пріоритет',
+  mediumPriority: 'Середній пріоритет',
+  lowPriority: 'Низький пріоритет'
 } as const;
 
 export type TranslationKeys = keyof typeof uk;

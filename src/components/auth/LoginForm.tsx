@@ -3,9 +3,7 @@
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
-import { Mail, Lock, Loader2 } from "lucide-react";
-import { doc, setDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import {Mail, Lock, Loader2, EyeOff, Eye} from "lucide-react";
 
 interface LoginFormProps {
   onSuccess: () => void;
@@ -20,6 +18,7 @@ export default function LoginForm({ onSuccess, onSubmit }: LoginFormProps) {
     email: "",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   // const saveUser = async (userId: string, data: any) => {
   //   // 1. Создаем ссылку на документ: (база, коллекция, id)
@@ -66,58 +65,39 @@ export default function LoginForm({ onSuccess, onSubmit }: LoginFormProps) {
         onSubmit={handleSubmit}
         style={{ display: "flex", flexDirection: "column", gap: 16 }}
       >
-        <div className="input-group">
-          <label
-            style={{
-              fontSize: 13,
-              fontWeight: 500,
-              marginBottom: 6,
-              display: "block",
-            }}
-          >
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="email" className="text-[13px] font-medium text-[var(--color-text-secondary)]">
             Email
           </label>
-          <div style={{ position: "relative" }}>
+          <div className="relative group">
             <Mail
               size={16}
-              style={{
-                position: "absolute",
-                left: 12,
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "var(--color-text-muted)",
-              }}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] group-focus-within:text-[var(--color-primary)] transition-colors"
             />
             <input
+              id="email"
               type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
+              className="w-full pl-10 pr-3 py-[10px] bg-[var(--color-bg)] border border-[var(--color-border)] rounded-[var(--radius-md)] text-[16px] outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all"
               placeholder="Enter your email"
-              style={{
-                width: "100%",
-                padding: "10px 12px 10px 36px",
-                borderRadius: "var(--radius-md)",
-                border: "1px solid var(--color-border)",
-                background: "var(--color-bg)",
-                color: "var(--color-text-primary)",
-              }}
             />
           </div>
         </div>
 
         <div className="input-group">
           <label
+            htmlFor="password-input"
             style={{
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: 500,
               marginBottom: 6,
               display: "block",
+              color: "var(--color-text-secondary)",
             }}
           >
             Password
           </label>
           <div style={{ position: "relative" }}>
+            {/* Іконка зліва */}
             <Lock
               size={16}
               style={{
@@ -126,23 +106,49 @@ export default function LoginForm({ onSuccess, onSubmit }: LoginFormProps) {
                 top: "50%",
                 transform: "translateY(-50%)",
                 color: "var(--color-text-muted)",
+                pointerEvents: "none", // Важливо
               }}
             />
+
             <input
-              type="password"
+              id="password-input"
+              type={showPassword ? "text" : "password"} // Зміна типу
               name="password"
               value={formData.password}
               onChange={handleChange}
               placeholder="Enter your password"
               style={{
                 width: "100%",
-                padding: "10px 12px 10px 36px",
+                padding: "10px 40px 10px 36px", // Додав відступ справа для кнопки
                 borderRadius: "var(--radius-md)",
                 border: "1px solid var(--color-border)",
                 background: "var(--color-bg)",
                 color: "var(--color-text-primary)",
+                outline: "none",
+                transition: "border-color 0.2s",
               }}
             />
+
+            {/* Кнопка перемикання справа */}
+            <button
+              type="button" // Щоб не сабмітив форму
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: "absolute",
+                right: 12,
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--color-text-muted)",
+                padding: 0,
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
           </div>
         </div>
 

@@ -11,7 +11,7 @@ import { Plus, Check, Flame, Trash2 } from 'lucide-react';
 export default function HabitTracker() {
   const { t } = useTranslation();
   const { settings } = useSettings();
-  const { habits, addHabit, toggleHabit, removeHabit, getHabitsByFrequency, getStreak } = useHabits();
+  const { habits, loading, addHabit, toggleHabit, fetchHabits, removeHabit, getStreak, getHabitsByFrequency } = useHabits();
 
   const allTabs: { key: HabitFrequency; label: string }[] = [
     { key: 'daily', label: t('daily') },
@@ -27,6 +27,19 @@ export default function HabitTracker() {
   const [newIcon, setNewIcon] = useState('🎯');
 
   const today = new Date().toISOString().split('T')[0];
+
+  const now = new Date();
+
+// Вчера
+  const yesterdayDate = new Date();
+  yesterdayDate.setDate(now.getDate() - 1);
+  // const yesterday = yesterdayDate.toISOString().split('T')[0];
+
+// Завтра
+  const tomorrowDate = new Date();
+  tomorrowDate.setDate(now.getDate() + 1);
+  const tomorrow = tomorrowDate.toISOString().split('T')[0];
+
   const filteredHabits = getHabitsByFrequency(activeTab);
 
   const handleAdd = () => {
@@ -35,6 +48,12 @@ export default function HabitTracker() {
     setNewName('');
     setShowAdd(false);
   };
+
+  // if (loading) return (
+  //   <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)] border border-[var(--color-border-light)] p-5 transition-all hover:shadow-[var(--shadow-md)]">
+  //     Завантаження...
+  //   </div>
+  // );
 
   return (
     <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)] border border-[var(--color-border-light)] p-5 transition-all hover:shadow-[var(--shadow-md)]">
@@ -109,7 +128,7 @@ export default function HabitTracker() {
       ) : (
         <div className="flex flex-col gap-1">
           {filteredHabits.map(habit => {
-            const isCompleted = habit.completedDates.includes(today);
+            const isCompleted = habit?.completed_dates?.includes(tomorrow);
             const streak = getStreak(habit);
             return (
               <div
@@ -118,7 +137,7 @@ export default function HabitTracker() {
               >
                 <div
                   className="flex items-center gap-3 flex-1 min-w-0"
-                  onClick={() => toggleHabit(habit.id, today)}
+                  onClick={() => toggleHabit(habit.id, tomorrow)}
                 >
                   {/* Custom Checkbox */}
                   <div className={`w-5 h-5 rounded-[6px] border-2 flex items-center justify-center transition-all flex-shrink-0 ${

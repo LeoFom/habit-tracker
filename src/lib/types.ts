@@ -87,3 +87,5 @@ export interface ContributionDay {
   count: number;
   level: 0 | 1 | 2 | 3 | 4;
 }
+
+export type AuthView = 'login' | 'register' | 'profile' | '';

@@ -38,7 +38,7 @@ export default function HabitTracker() {
 // Завтра
   const tomorrowDate = new Date();
   tomorrowDate.setDate(now.getDate() + 1);
-  const tomorrow = tomorrowDate.toISOString().split('T')[0];
+  // const tomorrow = tomorrowDate.toISOString().split('T')[0];
 
   const filteredHabits = getHabitsByFrequency(activeTab);
 
@@ -128,7 +128,7 @@ export default function HabitTracker() {
       ) : (
         <div className="flex flex-col gap-1">
           {filteredHabits.map(habit => {
-            const isCompleted = habit?.completed_dates?.includes(tomorrow);
+            const isCompleted = habit?.completed_dates?.includes(today);
             const streak = getStreak(habit);
             return (
               <div
@@ -137,7 +137,7 @@ export default function HabitTracker() {
               >
                 <div
                   className="flex items-center gap-3 flex-1 min-w-0"
-                  onClick={() => toggleHabit(habit.id, tomorrow)}
+                  onClick={() => toggleHabit(habit.id, today)}
                 >
                   {/* Custom Checkbox */}
                   <div className={`w-5 h-5 rounded-[6px] border-2 flex items-center justify-center transition-all flex-shrink-0 ${

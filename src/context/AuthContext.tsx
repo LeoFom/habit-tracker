@@ -18,6 +18,8 @@ interface AuthContextType {
   // Измени void на UserCredential
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  updateProfile: (fullName: string) => Promise<void>; // Новый метод
+  resetPassword: (email: string) => Promise<void>;    // Новый метод
 }
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -66,8 +68,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   };
 
+  const updateProfile = async (fullName: string) => {
+    const supabase = await getSupabaseBrowserClient();
+    const { error } = await supabase.auth.updateUser({
+      data: { full_name: fullName }
+    });
+    if (error) throw error;
+  };
+
+  const resetPassword = async (email: string) => {
+    const supabase = await getSupabaseBrowserClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/update-password`,
+    });
+    if (error) throw error;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, signInWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, session, loading, signInWithGoogle, logout, updateProfile, resetPassword }}>
       {!loading && children}
     </AuthContext.Provider>
   );

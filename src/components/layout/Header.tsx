@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import SettingsModal from "@/components/layout/SettingsModal";
 import AuthModal from "@/components/auth/AuthModal";
+import {AuthView} from "@/lib/types";
 
 export default function Header() {
   const { t } = useTranslation();
@@ -25,6 +26,7 @@ export default function Header() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isInitialView, setInitialView] = useState<AuthView>('');
 
   // Слідкуємо за скролом для стилізації шапки
   useEffect(() => {
@@ -97,7 +99,14 @@ export default function Header() {
           </button>
           {user ? (
             <div className={'flex gap-[14px]'}>
-              <button className="flex items-center gap-2 p-1 pr-3 rounded-full bg-[var(--color-bg)] border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors">
+              <button
+                onClick={() => {
+                  setInitialView('profile')
+                  setShowAuthModal(true)
+                }}
+                className="flex items-center gap-2 p-1 pr-3 rounded-full bg-[var(--color-bg)]
+                border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors"
+              >
                 {false ? (
                   <img src={'/'} alt="User" className="w-8 h-8 rounded-full" />
                 ) : (
@@ -203,8 +212,9 @@ export default function Header() {
         </aside>
       </div>
 
+      {/*{showSettings && <ProfileModal />}*/}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      <AuthModal viewValue={isInitialView} isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </>
   );
 }

@@ -8,7 +8,7 @@ export function EditProfileForm() {
   // const [name, setName] = useState(user?.user_metadata?.full_name || "");
   // const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
 
-  console.log("user",user)
+  // console.log("user",user)
   // const [user, setUser] = useState({
   //   user_metadata: {
   //     full_name: "Александр Иванов",

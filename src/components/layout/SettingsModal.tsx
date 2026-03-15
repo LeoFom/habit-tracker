@@ -23,7 +23,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     { key: 'daily', label: t('daily') },
     { key: 'weekly', label: t('weekly') },
     { key: 'monthly', label: t('monthly') },
-    { key: 'yearly', label: t('yearly') },
+    // { key: 'yearly', label: t('yearly') },
   ];
 
   return (

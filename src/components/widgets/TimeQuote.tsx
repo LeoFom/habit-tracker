@@ -10,7 +10,6 @@ export default function TimeQuote() {
   const [time, setTime] = useState(new Date());
   const [quoteIndex, setQuoteIndex] = useState(0);
 
-  const [tasks, setTasks] = useState([]); // Стан для даних з бази
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -28,21 +27,21 @@ export default function TimeQuote() {
   const dayNum = time.getDate();
   const month = time.toLocaleDateString('uk-UA', { month: 'long' });
 
-  const handleFetchTasks = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch('/api/supabase/tasks'); // Шлях до вашого GET файлу
-      if (!response.ok) throw new Error('Помилка завантаження');
-
-      const data = await response.json();
-      setTasks(data);
-      console.log('Дані отримано:', data);
-    } catch (err: any | {message: string}) {
-      console.error(err?.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const handleFetchTasks = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const response = await fetch('/api/supabase/tasks'); // Шлях до вашого GET файлу
+  //     if (!response.ok) throw new Error('Помилка завантаження');
+  //
+  //     const data = await response.json();
+  //     // setTasks(data);
+  //     // console.log('Дані отримано:', data);
+  //   } catch (err: any | {message: string}) {
+  //     console.error(err?.message);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
 
   const btnBase = "inline-flex items-center justify-center gap-[6px] font-medium transition-all duration-200 cursor-pointer whitespace-nowrap active:scale-95 disabled:opacity-50";
@@ -64,7 +63,7 @@ export default function TimeQuote() {
         <div className="flex items-center gap-2">
           <button
             className={btnPrimary}
-            onClick={() => handleFetchTasks()}
+            // onClick={() => handleFetchTasks()}
             // onClick={() => { /* handleCreateTask */ }}
             disabled={loading}
           >

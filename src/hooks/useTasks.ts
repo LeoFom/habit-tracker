@@ -1,173 +1,260 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Task, TaskPriority } from '@/lib/types';
-import {useAuth} from "@/context/AuthContext";
+import { useContext} from 'react';
+import {TasksContext} from "@/app/providers/TasksProvider";
+
+// export function useTasks() {
+//   const [searchQuery, setSearchQuery] = useState("");
+//   const [tasks, setTasks] = useState<Task[]>([]);
+//   const { user } = useAuth()
+//   const [loading, setLoading] = useState(true);
+//   const controllerRef = useRef<AbortController | null>(null);
+//
+//   // 1. Функція завантаження (той самий fetchTasks)
+//   const fetchTasks = useCallback(async () => {
+//     if (!user) return;
+//
+//     if (controllerRef.current) {
+//       controllerRef.current.abort();
+//     }
+//
+//     controllerRef.current = new AbortController();
+//
+//     try {
+//       setLoading(true);
+//
+//       const res = await fetch('/api/supabase/tasks', {
+//         signal: controllerRef.current.signal
+//       });
+//
+//       if (!res.ok) throw new Error();
+//
+//       const data = await res.json();
+//
+//       setTasks(Array.isArray(data) ? data : []);
+//
+//     } catch (err: any) {
+//       if (err.name !== "AbortError") {
+//         setTasks([]);
+//       }
+//     } finally {
+//       setLoading(false);
+//     }
+//   }, [user]);
+//
+//   // Завантажуємо при старті
+//   useEffect(() => {
+//     if (!user) {
+//       setTasks([]);
+//       return;
+//     }
+//
+//     fetchTasks();
+//
+//     return () => {
+//       controllerRef.current?.abort();
+//     };
+//
+//   }, [user]);
+//
+//   // 2. Додавання (POST)
+//   const addTask = useCallback(async (task: any) => {
+//     const res = await fetch('/api/supabase/tasks', {
+//       method: 'POST',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify(task),
+//     });
+//
+//     if (!res.ok) return res;
+//
+//     const newTask = await res.json();
+//
+//     setTasks(prev => [newTask, ...prev]);
+//
+//     return res;
+//   }, []);
+//
+//   // 3. Видалення (DELETE)
+//   const removeTask = useCallback(async (id: string) => {
+//     const res = await fetch(`/api/supabase/tasks/${id}`, {
+//       method: 'DELETE'
+//     });
+//
+//     if (!res.ok) return;
+//
+//     setTasks(prev => prev.filter(t => t.id !== id));
+//   }, []);
+//
+//
+//   // const addTask = useCallback((task: Omit<Task, 'id' | 'createdAt' | 'completed'>) => {
+//   //   const newTask: Task = {
+//   //     ...task,
+//   //     id: crypto.randomUUID(),
+//   //     completed: false,
+//   //     createdAt: new Date().toISOString(),
+//   //   };
+//   //   persist([...tasks, newTask]);
+//   // }, [tasks, persist]);
+//
+//   const updateTask = useCallback(async (id: string, updates: Partial<Task>) => {
+//     try {
+//       const res = await fetch(`/api/supabase/tasks/${id}`, {
+//         method: 'PATCH',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify(updates),
+//       });
+//
+//       if (!res.ok) throw new Error();
+//
+//       const updatedTask = await res.json();
+//
+//       setTasks(prev =>
+//         prev.map(t => t.id === id ? updatedTask : t)
+//       );
+//
+//       return updatedTask;
+//
+//     } catch (err) {
+//       console.error(err);
+//       return null;
+//     }
+//   }, []);
+//
+//   // const removeTask = useCallback((id: string) => {
+//   //   persist(tasks.filter(t => t.id !== id));
+//   // }, [tasks, persist]);
+//
+//   const toggleTask = useCallback(async (id: string) => {
+//
+//     const task = tasks.find(t => t.id === id);
+//     if (!task) return;
+//
+//     const newCompleted = !task.completed;
+//
+//     // optimistic update
+//     setTasks(prev =>
+//       prev.map(t => t.id === id ? { ...t, completed: newCompleted } : t)
+//     );
+//
+//     const res = await fetch(`/api/supabase/tasks/${id}`, {
+//       method: 'PATCH',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify({ completed: newCompleted }),
+//     });
+//
+//     if (!res.ok) return;
+//
+//     const updatedTask = await res.json();
+//
+//     setTasks(prev =>
+//       prev.map(t => t.id === id ? updatedTask : t)
+//     );
+//
+//   }, [tasks]);
+//
+//   const sortedTasks = useMemo(() => {
+//
+//     if (!Array.isArray(tasks)) return [];
+//
+//     let filtered = tasks;
+//
+//     if (searchQuery) {
+//       const q = searchQuery.toLowerCase();
+//
+//       filtered = tasks.filter(t =>
+//         t.title.toLowerCase().includes(q)
+//       );
+//     }
+//
+//     return [...filtered].sort((a, b) => {
+//       if (a.completed !== b.completed) return a.completed ? 1 : -1;
+//       return 0;
+//     });
+//
+//   }, [tasks, searchQuery]);
+//   // const getSortedTasks = useCallback(() => {
+//   //   return [...tasks].sort((a, b) => {
+//   //     // Incomplete first
+//   //     if (a.completed !== b.completed) return a.completed ? 1 : -1;
+//   //     // Then by priority
+//   //     return PRIORITY_CONFIG[a.priority].order - PRIORITY_CONFIG[b.priority].order;
+//   //   });
+//   // }, [tasks]);
+//
+//   const completedCount = useMemo(() => {
+//     return tasks.reduce((acc, t) => acc + (t.completed ? 1 : 0), 0);
+//   }, [tasks]);
+//
+//   // const getSortedTasksOLD = useCallback(() => {
+//   //   // Якщо tasks не масив (на випадок помилок), повертаємо порожній список
+//   //   if (!Array.isArray(tasks)) return [];
+//   //
+//   //   return [...tasks].sort((a, b) => {
+//   //     // Спочатку незавершені
+//   //     if (a.completed !== b.completed) return a.completed ? 1 : -1;
+//   //
+//   //
+//   //     return 0;
+//   //   });
+//   // }, [tasks]);
+//
+//   const getTasksByPriority = useCallback((priority: TaskPriority) => {
+//     if (!Array.isArray(tasks)) return [];
+//     return tasks.filter(t => t.priority === priority);
+//   }, [tasks]);
+//
+//   // const getSortedTasks = useCallback(() => {
+//   //   if (!Array.isArray(tasks)) return [];
+//   //
+//   //   let filtered = [...tasks];
+//   //
+//   //   // Если есть поисковый запрос от AI — фильтруем
+//   //   if (searchQuery) {
+//   //     filtered = filtered.filter(t =>
+//   //       t.title.toLowerCase().includes(searchQuery.toLowerCase())
+//   //     );
+//   //   }
+//   //
+//   //   return filtered.sort((a, b) => {
+//   //     if (a.completed !== b.completed) return a.completed ? 1 : -1;
+//   //     return 0;
+//   //   });
+//   // }, [tasks, searchQuery]);
+//
+//
+//   return useMemo(() => ({
+//     tasks,
+//     loading,
+//     addTask,
+//     fetchTasks,
+//     sortedTasks,
+//     removeTask,
+//     updateTask,
+//     toggleTask,
+//     getTasksByPriority,
+//     completedCount,
+//     searchQuery,
+//     setSearchQuery,
+//   }), [
+//     tasks,
+//     loading,
+//     addTask,
+//     fetchTasks,
+//     sortedTasks,
+//     removeTask,
+//     updateTask,
+//     toggleTask,
+//     getTasksByPriority,
+//     completedCount,
+//     searchQuery
+//   ]);
+// }
+
 
 export function useTasks() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const { user } = useAuth()
-  const [mounted, setMounted] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  // 1. Функція завантаження (той самий fetchTasks)
-  const fetchTasks = useCallback(async () => {
-    // 2. Якщо юзера немає, навіть не робимо запит
-    if (!user) {
-      setTasks([]);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const res = await fetch('/api/supabase/tasks');
-      const data = await res.json();
-
-      // ПЕРЕВІРКА: якщо data не масив (наприклад, об'єкт помилки), ставимо порожній масив
-      if (Array.isArray(data)) {
-        setTasks(data);
-      } else {
-        console.error("API returned not an array:", data);
-        setTasks([]);
-      }
-    } catch (error) {
-      setTasks([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  // Завантажуємо при старті
-  useEffect(() => {
-    // 4. Важливо: якщо юзер виходить, цей ефект спрацює знову
-    if (user) {
-      fetchTasks();
-    } else {
-      setTasks([]); // 5. МИТТЄВО очищуємо стейт при logout
-    }
-  }, [user, fetchTasks]);
-
-  // 2. Додавання (POST)
-  const addTask = async (task: any) => {
-    const res = await fetch('/api/supabase/tasks', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(task),
-    });
-
-    if (res?.ok){
-      await fetchTasks();
-      return res
-    }
-    else {
-      return res
-    }
-  };
-
-  // 3. Видалення (DELETE)
-  const removeTask = async (id: string) => {
-    // Тобі треба буде створити DELETE метод в api/tasks/[id]/route.ts
-    // Або просто викликати supabase client напряму тут (якщо RLS дозволяє)
-    await fetch(`/api/supabase/tasks/${id}`, { method: 'DELETE' });
-    await fetchTasks();
-  };
-
-
-  // const addTask = useCallback((task: Omit<Task, 'id' | 'createdAt' | 'completed'>) => {
-  //   const newTask: Task = {
-  //     ...task,
-  //     id: crypto.randomUUID(),
-  //     completed: false,
-  //     createdAt: new Date().toISOString(),
-  //   };
-  //   persist([...tasks, newTask]);
-  // }, [tasks, persist]);
-
-  const updateTask = async (id: string, updates: Partial<Task>) => {
-    console.log("!!!! updateTask -> updates",updates)
-
-    try {
-      const res = await fetch(`/api/supabase/tasks/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
-      });
-
-      if (!res.ok) throw new Error('Failed to update task');
-
-      const updatedTask = await res.json();
-
-      // Обновляем список задач, чтобы UI сразу подтянулся
-      await fetchTasks();
-
-      return updatedTask;
-    } catch (err) {
-      console.error("Update error:", err);
-      return null;
-    }
-  };
-
-  // const removeTask = useCallback((id: string) => {
-  //   persist(tasks.filter(t => t.id !== id));
-  // }, [tasks, persist]);
-
-  const toggleTask = async (id: string) => {
-    const task = tasks.find(t => t.id === id);
-    if (!task) return;
-
-    await fetch(`/api/supabase/tasks/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ completed: !task.completed }),
-    });
-    await fetchTasks();
-  };
-
-  // const getSortedTasks = useCallback(() => {
-  //   return [...tasks].sort((a, b) => {
-  //     // Incomplete first
-  //     if (a.completed !== b.completed) return a.completed ? 1 : -1;
-  //     // Then by priority
-  //     return PRIORITY_CONFIG[a.priority].order - PRIORITY_CONFIG[b.priority].order;
-  //   });
-  // }, [tasks]);
-
-  const getCompletedCount = useCallback(() => {
-    return tasks.filter(t => t.completed).length;
-  }, [tasks]);
-
-  const getSortedTasks = useCallback(() => {
-    // Якщо tasks не масив (на випадок помилок), повертаємо порожній список
-    if (!Array.isArray(tasks)) return [];
-
-    return [...tasks].sort((a, b) => {
-      // Спочатку незавершені
-      if (a.completed !== b.completed) return a.completed ? 1 : -1;
-
-      // Потім за пріоритетом (якщо у вас є PRIORITY_CONFIG)
-      // const orderA = PRIORITY_CONFIG[a.priority]?.order || 0;
-      // const orderB = PRIORITY_CONFIG[b.priority]?.order || 0;
-      // return orderA - orderB;
-
-      return 0;
-    });
-  }, [tasks]);
-
-  const getTasksByPriority = useCallback((priority: TaskPriority) => {
-    if (!Array.isArray(tasks)) return [];
-    return tasks.filter(t => t.priority === priority);
-  }, [tasks]);
-
-  return {
-    tasks,
-    loading,
-    addTask,
-    fetchTasks,
-    getSortedTasks,
-    removeTask,
-    mounted,
-    updateTask,
-    toggleTask,
-    getTasksByPriority,
-    getCompletedCount,
-  };
+  const context = useContext(TasksContext);
+  if (!context) {
+    throw new Error("useHabits must be used within a HabitsProvider");
+  }
+  return context;
 }

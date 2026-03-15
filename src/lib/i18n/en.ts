@@ -7,7 +7,7 @@ const en: Record<TranslationKeys, string> = {
 
   // Header
   greeting: 'Hey! Ready for a productive day?',
-  searchPlaceholder: 'Start searching here...',
+  searchPlaceholder: 'Describe the action for AI...',
   settings: 'Settings',
   login: 'Login',
 

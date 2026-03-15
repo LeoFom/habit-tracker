@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Task, TaskPriority, ReminderFrequency } from '@/lib/types';
+import {Task, TaskPriority, ReminderFrequency, CreateTaskDTO} from '@/lib/types';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { PRIORITY_CONFIG } from '@/lib/constants';
 import { X, Trash2, Bell, Tag } from 'lucide-react';
@@ -9,24 +9,27 @@ import { X, Trash2, Bell, Tag } from 'lucide-react';
 interface TaskModalProps {
   task: Task | null;
   isNew?: boolean;
-  onSave: (task: {
-    title: string;
-    description: string | null;
-    priority: "urgent" | "high" | "medium" | "low";
-    tags: string[];
-    due_date: string | null;
-    reminder_at: string | null;
-    reminder_frequency: "once" | "daily" | "weekly"
-  }) => void;
-  onUpdate?: (id: string, updates: {
-    title: string;
-    description: string | null;
-    priority: "urgent" | "high" | "medium" | "low";
-    tags: string[];
-    due_date: string | null;
-    reminder_at: string | null;
-    reminder_frequency: "once" | "daily" | "weekly"
-  }) => void;
+  onSave: (task: CreateTaskDTO) => void;
+
+  onUpdate?: (id: string, updates: CreateTaskDTO) => void;
+  // onSave: (task: {
+  //   title: string;
+  //   description: string | null | undefined ;
+  //   priority: "urgent" | "high" | "medium" | "low";
+  //   tags: string[];
+  //   due_date: string | null | undefined;
+  //   reminder_at: string | null | undefined;
+  //   reminder_frequency: "once" | "daily" | "weekly"
+  // }) => void;
+  // onUpdate?: (id: string, updates: {
+  //   title: string;
+  //   description: string | null;
+  //   priority: "urgent" | "high" | "medium" | "low";
+  //   tags: string[];
+  //   due_date: string | null;
+  //   reminder_at: string | null;
+  //   reminder_frequency: "once" | "daily" | "weekly"
+  // }) => void;
   onDelete?: (id: string) => void;
   onClose: () => void;
 }
@@ -47,7 +50,7 @@ export default function TaskModal({ task, isNew, onSave, onUpdate, onDelete, onC
     if (!title.trim()) return;
 
     // Створюємо об'єкт, який відповідає назвам колонок у Postgres
-    const taskPayload = {
+    const taskPayload: CreateTaskDTO = {
       title: title.trim(),
       description: description.trim() || null,
       priority,

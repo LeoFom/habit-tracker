@@ -15,19 +15,22 @@ import {
 import SettingsModal from "@/components/layout/SettingsModal";
 import AuthModal from "@/components/auth/AuthModal";
 import {AuthView} from "@/lib/types";
+import {useHabitsInternal} from "@/hooks/useHabitsInternal";
+import {useTasksInternal} from "@/hooks/useTasksInternal";
 
 export default function Header() {
   const { t } = useTranslation();
   const { settings, updateSettings } = useSettings();
   const { user, logout } = useAuth();
 
-  console.log("user",user)
   const [showSettings, setShowSettings] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isInitialView, setInitialView] = useState<AuthView>('');
 
+  const tasksCtx = useTasksInternal();
+  const habitsCtx = useHabitsInternal();
   // Слідкуємо за скролом для стилізації шапки
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -48,6 +51,162 @@ export default function Header() {
   const btnGhost = `${btnBase} bg-transparent text-[var(--color-text-secondary)] px-3 py-2 rounded-[var(--radius-md)] hover:bg-[var(--color-bg)] hover:text-[var(--color-text-primary)]`;
 
   // uid - "b7t3ENENYHWHB9ImoDw41KiyeXU2"
+  // const handleAICommandOLD = async (userInput: string) => {
+  //   try {
+  //     const res = await fetch("/api/ai/parse-task", {
+  //       method: "POST",
+  //       body: JSON.stringify({ text: userInput })
+  //     });
+  //
+  //     const { type, data, error } = await res.json();
+  //
+  //     console.log(" handleAICommand -> data",data)
+  //     // console.log(" handleAICommand -> error",error)
+  //     // Вспомогательная функция для поиска ID по названию
+  //     const findTaskIdByTitle = (title: string) => {
+  //       return tasks.find(t =>
+  //         t.title.toLowerCase().includes(title.toLowerCase())
+  //       )?.id;
+  //     };
+  //
+  //     switch (type) {
+  //       case "create_task":
+  //         await addTask({
+  //           title: data.title,
+  //           due_date: data.dueDate ?? null,
+  //           priority: "medium", // дефолт
+  //           completed: false
+  //         });
+  //         setSearchQuery(""); // Сбрасываем поиск при создании
+  //         break;
+  //
+  //       case "search_task":
+  //         setSearchQuery(data.searchQuery || data.title);
+  //         break;
+  //
+  //       case "delete_task":
+  //         const idToDelete = findTaskIdByTitle(data.originalTitle || data.title);
+  //         if (idToDelete) {
+  //           await removeTask(idToDelete);
+  //         } else {
+  //           console.warn("Задача для удаления не найдена");
+  //         }
+  //         break;
+  //
+  //       case "update_task":
+  //         const idToUpdate = findTaskIdByTitle(data.originalTitle);
+  //         if (idToUpdate) {
+  //           // Отправляем в базу только измененные поля
+  //           const updates: any = {};
+  //           if (data.title) updates.title = data.title;
+  //           if (data.dueDate) updates.dueDate = data.dueDate;
+  //           if (data.reminder) updates.reminder = data.reminder;
+  //
+  //           await updateTask(idToUpdate, updates);
+  //         }
+  //         break;
+  //     }
+  //   } catch (error) {
+  //     console.error("AI Error:", error);
+  //   }
+  // };
+
+  const handleAICommand = async (
+    userInput: string,
+    { tasks, addTask, updateTask, removeTask, setSearchQuery }: ReturnType<typeof useTasksInternal>,
+    { habits, addHabit, updateHabit, removeHabit, toggleHabit }: ReturnType<typeof useHabitsInternal>
+  ) => {
+    try {
+      const res = await fetch("/api/ai/parse-task", {
+        method: "POST",
+        body: JSON.stringify({ text: userInput })
+      });
+
+      const { type, data } = await res.json();
+
+      // === TASKS HANDLING ===
+      const findTaskIdByTitle = (title: string) =>
+        tasks.find(t => t.title.toLowerCase().includes(title.toLowerCase()))?.id;
+
+      switch (type) {
+        case "create_task":
+          await addTask({
+            title: data.title!,
+            description: data.description ?? null,
+            due_date: data.due_date ?? null,
+            priority: data.priority ?? "medium",
+            tags: data.tags ?? [],
+            completed: false,
+          });
+          setSearchQuery("");
+          break;
+
+        case "update_task":
+          const idToUpdate = findTaskIdByTitle(data.originalTitle!);
+          if (idToUpdate) {
+            const updates: any = {};
+            if (data.title) updates.title = data.title;
+            if (data.description) updates.description = data.description;
+            if (data.due_date) updates.due_date = data.due_date;
+            if (data.reminder_at) updates.reminder_at = data.reminder_at;
+            if (data.priority) updates.priority = data.priority;
+            if (data.tags) updates.tags = data.tags;
+            await updateTask(idToUpdate, updates);
+          }
+          break;
+
+        case "delete_task":
+          const idToDelete = findTaskIdByTitle(data.originalTitle!);
+          if (idToDelete) await removeTask(idToDelete);
+          break;
+
+        case "search_task":
+          setSearchQuery(data.searchQuery ?? data.title ?? "");
+          break;
+
+        // === HABITS HANDLING ===
+        case "create_habit":
+          await addHabit(
+            data.name!,
+            data.frequency ?? "daily",
+            data.icon ?? "🎯",
+            data.color ?? undefined
+          );
+          break;
+
+        case "update_habit":
+          const habitToUpdate = habits.find(h => h.name === data.originalName);
+          if (habitToUpdate) {
+            await updateHabit(habitToUpdate.id, {
+              name: data.name,
+              frequency: data.frequency,
+              icon: data.icon,
+              color: data.color
+            });
+          }
+          break;
+
+        case "delete_habit":
+          const habitToDelete = habits.find(h => h.name === data.originalName);
+          if (habitToDelete) await removeHabit(habitToDelete.id);
+          break;
+
+        case "toggle_habit":
+          const habitToToggle = habits.find(h => h.name === data.name);
+          if (habitToToggle && data.date) {
+            await toggleHabit(habitToToggle.id, data.date);
+          }
+          break;
+
+        default:
+          console.warn("Unknown AI type:", type);
+      }
+
+    } catch (error) {
+      console.error("AI Error:", error);
+    }
+  };
+
   return (
     <>
       <header className={`sticky top-0 z-40 w-full transition-all duration-300 h-16 md:h-20 flex items-center justify-between px-4 md:px-8 border-b ${
@@ -78,6 +237,11 @@ export default function Header() {
             <input
               type="text"
               placeholder={t("searchPlaceholder")}
+              onKeyDown={(e)=>{
+                if (e.key === "Enter") {
+                  handleAICommand(e.currentTarget.value, tasksCtx, habitsCtx);
+                }
+              }}
               className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl py-2 pl-10 pr-4 text-sm outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all"
             />
           </div>
@@ -228,3 +392,5 @@ function MobileLink({ icon, label }: { icon: React.ReactNode, label: string }) {
     </button>
   );
 }
+
+// Я хочу тебя проверить, запиши задачу, на завтра, чтобы я полил цветы, но использовал гарячую воду, и напоминане на 8 утра

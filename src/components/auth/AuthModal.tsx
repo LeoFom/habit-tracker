@@ -37,7 +37,7 @@ export default function AuthModal({ isOpen, onClose, viewValue = '', initialView
             data: { full_name: formData.name } // Передаем имя в metadata
           }
         });
-        console.log("register - data",data)
+        // console.log("register - data",data)
         if (error) throw error;
         showToast('Check your inbox to confirm!', 'success');
       } else {
@@ -45,7 +45,7 @@ export default function AuthModal({ isOpen, onClose, viewValue = '', initialView
           email: formData.email,
           password: formData.password,
         });
-        console.log("login - data", data)
+        // console.log("login - data", data)
 
         if (error) throw error;
         showToast('Signed in successfully', 'success');

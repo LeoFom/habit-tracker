@@ -1,12 +1,12 @@
 'use client';
 
 import { useHabits } from '@/hooks/useHabits';
-import { useTasks } from '@/hooks/useTasks';
 import { useSettings } from '@/hooks/useSettings';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import React, { useMemo } from 'react';
 import { format, subDays, startOfToday } from 'date-fns';
 import {CalendarIcon} from "lucide-react";
+import {useTasksInternal} from "@/hooks/useTasksInternal";
 
 const LEVEL_COLORS = {
   0: 'bg-[var(--color-bg)] border border-[var(--color-border-light)]',
@@ -20,7 +20,7 @@ export default function ContributionCalendar() {
   const { t } = useTranslation();
   const { settings } = useSettings();
   const { habits } = useHabits();
-  const { tasks } = useTasks();
+  const { tasks } = useTasksInternal();
 
   const calendarData = useMemo(() => {
     const activityMap = new Map<string, number>();

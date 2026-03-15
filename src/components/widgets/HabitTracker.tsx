@@ -11,7 +11,7 @@ import { Plus, Check, Flame, Trash2 } from 'lucide-react';
 export default function HabitTracker() {
   const { t } = useTranslation();
   const { settings } = useSettings();
-  const { habits, loading, addHabit, toggleHabit, fetchHabits, removeHabit, getStreak, getHabitsByFrequency } = useHabits();
+  const { addHabit, toggleHabit, removeHabit, getStreak, getHabitsByFrequency } = useHabits();
 
   const allTabs: { key: HabitFrequency; label: string }[] = [
     { key: 'daily', label: t('daily') },

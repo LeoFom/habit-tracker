@@ -5,7 +5,7 @@ const uk = {
 
   // Header
   greeting: 'Привіт! Готовий до продуктивного дня?',
-  searchPlaceholder: 'Почніть пошук тут...',
+  searchPlaceholder: 'Опишите действие для AI...',
   settings: 'Налаштування',
   login: 'Увійти',
 

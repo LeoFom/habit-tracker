@@ -26,10 +26,12 @@ export type ReminderFrequency = 'once' | 'daily' | 'weekly';
 export interface Task {
   id: string;
   title: string;
-  description?: string;
+  // description?: string;
+  description: string | null;
   priority: TaskPriority;
   tags: string[];
-  due_date?: string;
+  due_date: string | null;
+  reminder_at: string | null;
   reminderDate?: string;
   reminderFrequency?: ReminderFrequency;
   completed: boolean;
@@ -37,6 +39,16 @@ export interface Task {
   // TODO: Future improvement — add subtasks support (nested tasks)
   // subtasks?: Task[];
 }
+
+export type CreateTaskDTO = {
+  title: string;
+  description: string | null;
+  priority: TaskPriority;
+  tags: string[];
+  due_date: string | null;
+  reminder_at: string | null;
+  reminder_frequency: ReminderFrequency;
+};
 
 // --- Settings Types ---
 

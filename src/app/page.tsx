@@ -88,6 +88,9 @@ export default function Home() {
         {/* Row 4: Contribution Calendar (full width) */}
         <ContributionCalendar />
       </div>
+      <footer>
+        Version: {process.env.APP_VERSION}
+      </footer>
     </main>
   );
 }

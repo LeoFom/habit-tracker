@@ -116,35 +116,81 @@ export function useTasksInternal() {
   // TOGGLE TASK
   // =========================
 
+  // const toggleTask = useCallback(async (id: string) => {
+  //
+  //   const task = tasks.find(t => t.id === id);
+  //   if (!task) return;
+  //
+  //   const newCompleted = !task.completed;
+  //
+  //   // optimistic update
+  //   setTasks(prev =>
+  //     prev.map(t =>
+  //       t.id === id ? { ...t, completed: newCompleted } : t
+  //     )
+  //   );
+  //
+  //   const res = await fetch(`/api/supabase/tasks/${id}`, {
+  //     method: "PATCH",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({ completed: newCompleted }),
+  //   });
+  //
+  //   if (!res.ok) return;
+  //
+  //   const updatedTask = await res.json();
+  //
+  //   setTasks(prev =>
+  //     prev.map(t => (t.id === id ? updatedTask : t))
+  //   );
+  //
+  // }, [tasks]);
+
   const toggleTask = useCallback(async (id: string) => {
+    let originalTask: Task | undefined;
 
-    const task = tasks.find(t => t.id === id);
-    if (!task) return;
+    const now = new Date();
+    const completedAtValue = now.toISOString(); // Формат: 2026-03-16T14:31:24.123Z
 
-    const newCompleted = !task.completed;
-
-    // optimistic update
-    setTasks(prev =>
-      prev.map(t =>
-        t.id === id ? { ...t, completed: newCompleted } : t
-      )
-    );
-
-    const res = await fetch(`/api/supabase/tasks/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ completed: newCompleted }),
+    // 1. Оптимистичное обновление
+    setTasks((prev) => {
+      return prev.map((t) => {
+        if (t.id === id) {
+          originalTask = { ...t }; // Сохраняем копию для отката
+          return { ...t, completed: !t.completed, completed_at: t.completed ? completedAtValue : null };
+        }
+        return t;
+      });
     });
 
-    if (!res.ok) return;
+    try {
+      const newStatus = !originalTask?.completed;
 
-    const updatedTask = await res.json();
+      const res = await fetch(`/api/supabase/tasks/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed: newStatus, completed_at: newStatus ? completedAtValue : null }),
+      });
 
-    setTasks(prev =>
-      prev.map(t => (t.id === id ? updatedTask : t))
-    );
+      if (!res.ok) throw new Error("Failed to update task");
 
-  }, [tasks]);
+      const updatedTask = await res.json();
+
+      // 2. Синхронизация с сервером (необязательно, если доверяем оптимистичному обновлению)
+      setTasks((prev) =>
+        prev.map((t) => (t.id === id ? updatedTask : t))
+      );
+    } catch (error) {
+      // 3. ОТКАТ (Rollback) в случае ошибки
+      console.error("Update failed, rolling back:", error);
+      if (originalTask) {
+        setTasks((prev) =>
+          prev.map((t) => (t.id === id ? originalTask! : t))
+        );
+      }
+      // Здесь можно добавить уведомление (toast) для пользователя
+    }
+  }, []); // Убрали tasks из зависимостей!
 
   // =========================
   // FILTER + SORT

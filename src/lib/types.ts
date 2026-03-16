@@ -35,6 +35,8 @@ export interface Task {
   reminderDate?: string;
   reminderFrequency?: ReminderFrequency;
   completed: boolean;
+  completed_at: string | null;
+  updated_at: string | null;
   createdAt: string;
   // TODO: Future improvement — add subtasks support (nested tasks)
   // subtasks?: Task[];

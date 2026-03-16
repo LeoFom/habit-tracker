@@ -113,7 +113,7 @@ export default function Header() {
 
   const handleAICommand = async (
     userInput: string,
-    { tasks, addTask, updateTask, removeTask, setSearchQuery }: ReturnType<typeof useTasksInternal>,
+    { tasks, addTask, updateTask, fetchTasks, removeTask, setSearchQuery }: ReturnType<typeof useTasksInternal>,
     { habits, addHabit, updateHabit, removeHabit, toggleHabit }: ReturnType<typeof useHabitsInternal>
   ) => {
     try {
@@ -201,6 +201,8 @@ export default function Header() {
         default:
           console.warn("Unknown AI type:", type);
       }
+
+      await fetchTasks();
 
     } catch (error) {
       console.error("AI Error:", error);

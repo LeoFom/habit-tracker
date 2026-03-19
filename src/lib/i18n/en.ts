@@ -71,6 +71,8 @@ const en: Record<TranslationKeys, string> = {
   activityCalendar: 'Activity Calendar',
   lessActive: 'Less',
   moreActive: 'More',
+  less: 'Less',
+  more: 'More',
 
   // Settings
   settingsTitle: 'Settings',

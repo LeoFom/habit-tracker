@@ -69,6 +69,8 @@ const uk = {
   activityCalendar: 'Календар активності',
   lessActive: 'Менше',
   moreActive: 'Більше',
+  less: 'Менше',
+  more: 'Більше',
 
   // Settings
   settingsTitle: 'Налаштування',

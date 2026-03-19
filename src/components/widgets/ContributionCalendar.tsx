@@ -4,7 +4,7 @@ import { useHabits } from '@/hooks/useHabits';
 import { useSettings } from '@/hooks/useSettings';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import React, { useMemo } from 'react';
-import {format, subDays, startOfToday, startOfWeek, addDays, subWeeks, endOfWeek} from 'date-fns';
+import {format, subDays, startOfToday, startOfWeek, addDays, endOfWeek} from 'date-fns';
 import {CalendarIcon} from "lucide-react";
 import {useTasksInternal} from "@/hooks/useTasksInternal";
 
@@ -18,7 +18,7 @@ type CalendarDay = {
 
 type CalendarWeek = CalendarDay[];
 
-const LEVEL_COLORS = {
+const LEVEL_COLORS: Record<CalendarDay['level'], string> = {
   0: 'bg-[var(--color-bg)] border border-[var(--color-border-light)]',
   1: 'bg-emerald-500/20 dark:bg-emerald-500/10',
   2: 'bg-emerald-500/40 dark:bg-emerald-500/30',
@@ -26,6 +26,14 @@ const LEVEL_COLORS = {
   4: 'bg-emerald-500 dark:bg-emerald-500',
 };
 
+type ActivityCellProps = {
+  day: CalendarDay;
+  isToday: boolean;
+};
+
+type MonthLabelsProps = {
+  weeks: CalendarWeek[];
+};
 
 export default function ContributionCalendar() {
   const { t } = useTranslation();
@@ -155,12 +163,12 @@ export default function ContributionCalendar() {
         </div>
       </div>
 
-      <CalendarLegend t={t} />
+      <CalendarLegend />
     </section>
   );
 }
 
-function ActivityCell({ day, isToday }: { day: any; isToday: boolean }) {
+function ActivityCell({ day, isToday }: ActivityCellProps) {
   return (
     <div
       className={`
@@ -191,12 +199,12 @@ function ActivityCell({ day, isToday }: { day: any; isToday: boolean }) {
   );
 }
 
-function MonthLabels({ weeks }: { weeks: any[] }) {
+function MonthLabels({ weeks }: MonthLabelsProps) {
   const labels = useMemo(() => {
     const result: { label: string; index: number }[] = [];
 
     weeks.forEach((week, weekIndex) => {
-      week.forEach((day: any) => {
+      week.forEach((day: CalendarDay) => {
         const date = new Date(day.date);
 
         // 🔥 ключ: первый день месяца
@@ -227,7 +235,9 @@ function MonthLabels({ weeks }: { weeks: any[] }) {
   );
 }
 
-function CalendarLegend({ t }: any) {
+function CalendarLegend() {
+  const { t } = useTranslation();
+
   return (
     <footer className="flex items-center justify-end gap-2 mt-4">
       <span className="text-[10px] text-[var(--color-text-muted)]">{t('less')}</span>

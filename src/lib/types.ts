@@ -32,14 +32,12 @@ export interface Task {
   tags: string[];
   due_date: string | null;
   reminder_at: string | null;
-  reminderDate?: string;
-  reminderFrequency?: ReminderFrequency;
+  reminderDate: string | null;
+  reminder_frequency?: ReminderFrequency;
   completed: boolean;
   completed_at: string | null;
   updated_at: string | null;
   createdAt: string;
-  // TODO: Future improvement — add subtasks support (nested tasks)
-  // subtasks?: Task[];
 }
 
 export type CreateTaskDTO = {

@@ -5,6 +5,8 @@ import {Task, TaskPriority, ReminderFrequency, CreateTaskDTO} from '@/lib/types'
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { PRIORITY_CONFIG } from '@/lib/constants';
 import { X, Trash2, Bell, Tag } from 'lucide-react';
+import {CustomAntDatePicker} from "@/components/ui/DatePicker";
+import {format} from 'date-fns';
 
 interface TaskModalProps {
   task: Task | null;
@@ -43,8 +45,8 @@ export default function TaskModal({ task, isNew, onSave, onUpdate, onDelete, onC
   const [tags, setTags] = useState<string[]>(task?.tags || []);
   const [newTag, setNewTag] = useState('');
   const [dueDate, setDueDate] = useState(task?.due_date || '');
-  const [reminderDate, setReminderDate] = useState(task?.reminderDate || '');
-  const [reminderFrequency, setReminderFrequency] = useState<ReminderFrequency>(task?.reminderFrequency || 'once');
+  const [reminderDate, setReminderDate] = useState(task?.reminder_at || '');
+  const [reminderFrequency, setReminderFrequency] = useState<ReminderFrequency>(task?.reminder_frequency || 'once');
 
   const handleSave = () => {
     if (!title.trim()) return;
@@ -164,11 +166,10 @@ export default function TaskModal({ task, isNew, onSave, onUpdate, onDelete, onC
         {/* Due Date */}
         <div style={{ marginBottom: 16 }}>
           <label className="label">{t('dueDate')}</label>
-          <input
-            className="input"
-            type="date"
+          <CustomAntDatePicker
             value={dueDate}
-            onChange={e => setDueDate(e.target.value)}
+            onChange={(val) => setDueDate(val ? format(val, 'yyyy-MM-dd') : '')}
+            placeholder={t('selectDate')}
           />
         </div>
 
@@ -183,11 +184,10 @@ export default function TaskModal({ task, isNew, onSave, onUpdate, onDelete, onC
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
               <label className="label">{t('reminderDate')}</label>
-              <input
-                className="input"
-                type="date"
+              <CustomAntDatePicker
                 value={reminderDate}
-                onChange={e => setReminderDate(e.target.value)}
+                onChange={(val) => setReminderDate(val ? format(val, 'yyyy-MM-dd') : '')}
+                placeholder={t('selectDate')}
               />
             </div>
             <div>

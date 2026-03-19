@@ -65,7 +65,7 @@ export default function ProgressCharts() {
     })).filter(item => item.value > 0);
   }, [tasks, getTasksByPriority, t]);
 
-  if (habits.length !== 0 && tasks.length !== 0) {
+  if (habits.length === 0 && tasks.length === 0) {
     return (
       <div className="w-full col-span-full">
         <EmptyState t={t} />

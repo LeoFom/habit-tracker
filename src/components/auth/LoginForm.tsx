@@ -120,16 +120,7 @@ export default function LoginForm({ onSuccess, onSubmit }: LoginFormProps) {
               value={formData.password}
               onChange={handleChange}
               placeholder="Enter your password"
-              style={{
-                width: "100%",
-                padding: "10px 40px 10px 36px", // Додав відступ справа для кнопки
-                borderRadius: "var(--radius-md)",
-                border: "1px solid var(--color-border)",
-                background: "var(--color-bg)",
-                color: "var(--color-text-primary)",
-                outline: "none",
-                transition: "border-color 0.2s",
-              }}
+              className="w-full pl-10 pr-3 py-[10px] bg-[var(--color-bg)] border border-[var(--color-border)] rounded-[var(--radius-md)] text-[16px] outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all"
             />
 
             {/* Кнопка перемикання справа */}

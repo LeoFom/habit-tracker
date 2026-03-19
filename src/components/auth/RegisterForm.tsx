@@ -82,36 +82,28 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
             value={formData.name}
             onChange={handleChange}
             placeholder="Enter your name"
-            style={{
-              width: '100%',
-              padding: '10px 12px 10px 36px',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--color-border)',
-              background: 'var(--color-bg)',
-              color: 'var(--color-text-primary)',
-            }}
+            className="w-full pl-10 pr-3 py-[10px] bg-[var(--color-bg)] border border-[var(--color-border)] rounded-[var(--radius-md)] text-[16px] outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all"
           />
         </div>
       </div>
 
-      <div className="input-group">
-        <label style={{ fontSize: 13, fontWeight: 500, marginBottom: 6, display: 'block' }}>Email</label>
-        <div style={{ position: 'relative' }}>
-          <Mail size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+      <div className="input-group flex flex-col gap-1.5">
+        <label htmlFor="email" className="text-[13px] font-medium text-[var(--color-text-secondary)]">
+          Email
+        </label>
+        <div className="relative group">
+          <Mail
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] group-focus-within:text-[var(--color-primary)] transition-colors"
+          />
           <input
+            id="email"
             type="email"
-            name="email"
+            name="email" // <--- ДОБАВЬТЕ ЭТО
+            className="w-full pl-10 pr-3 py-[10px] bg-[var(--color-bg)] border border-[var(--color-border)] rounded-[var(--radius-md)] text-[16px] outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all"
+            placeholder="Enter your email"
             value={formData.email}
             onChange={handleChange}
-            placeholder="Enter your email"
-            style={{
-              width: '100%',
-              padding: '10px 12px 10px 36px',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--color-border)',
-              background: 'var(--color-bg)',
-              color: 'var(--color-text-primary)',
-            }}
           />
         </div>
       </div>
@@ -126,14 +118,7 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
             value={formData.password}
             onChange={handleChange}
             placeholder="Min 8 chars, 1 number"
-            style={{
-              width: '100%',
-              padding: '10px 12px 10px 36px',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--color-border)',
-              background: 'var(--color-bg)',
-              color: 'var(--color-text-primary)',
-            }}
+            className="w-full pl-10 pr-3 py-[10px] bg-[var(--color-bg)] border border-[var(--color-border)] rounded-[var(--radius-md)] text-[16px] outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all"
           />
         </div>
       </div>

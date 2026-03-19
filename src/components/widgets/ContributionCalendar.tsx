@@ -4,9 +4,19 @@ import { useHabits } from '@/hooks/useHabits';
 import { useSettings } from '@/hooks/useSettings';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import React, { useMemo } from 'react';
-import { format, subDays, startOfToday } from 'date-fns';
+import {format, subDays, startOfToday, startOfWeek, addDays, subWeeks, endOfWeek} from 'date-fns';
 import {CalendarIcon} from "lucide-react";
 import {useTasksInternal} from "@/hooks/useTasksInternal";
+
+type CalendarDay = {
+  date: string;
+  count: number;
+  level: 0 | 1 | 2 | 3 | 4;
+  dayOfWeek: number;
+  isFuture: boolean;
+};
+
+type CalendarWeek = CalendarDay[];
 
 const LEVEL_COLORS = {
   0: 'bg-[var(--color-bg)] border border-[var(--color-border-light)]',
@@ -16,23 +26,35 @@ const LEVEL_COLORS = {
   4: 'bg-emerald-500 dark:bg-emerald-500',
 };
 
+
 export default function ContributionCalendar() {
   const { t } = useTranslation();
   const { settings } = useSettings();
   const { habits } = useHabits();
   const { tasks } = useTasksInternal();
 
-  const calendarData = useMemo(() => {
+  const WEEK_DAYS = [
+    t('mon'),
+    t('tue'),
+    t('wed'),
+    t('thu'),
+    t('fri'),
+    t('sat'),
+    t('sun'),
+  ];
+
+  const todayStr = format(startOfToday(), 'yyyy-MM-dd');
+
+  const calendarData = useMemo<CalendarWeek[]>(() => {
     const activityMap = new Map<string, number>();
 
-    // 1. Індексуємо звички
+    // --- индексация ---
     habits.forEach(habit => {
       habit.completed_dates?.forEach(date => {
         activityMap.set(date, (activityMap.get(date) || 0) + 1);
       });
     });
 
-    // 2. Індексуємо таски
     tasks.forEach(task => {
       if (task.completed && task.createdAt) {
         const date = task.createdAt.split('T')[0];
@@ -40,35 +62,52 @@ export default function ContributionCalendar() {
       }
     });
 
-    // 3. Генеруємо дні (від сьогодні на 364 дні назад)
     const today = startOfToday();
-    const days = [];
-    for (let i = 364; i >= 0; i--) {
-      const date = subDays(today, i);
-      const dateStr = format(date, 'yyyy-MM-dd');
-      const count = activityMap.get(dateStr) || 0;
 
-      let level: 0 | 1 | 2 | 3 | 4 = 0;
-      if (count >= 10) level = 4;
-      else if (count >= 5) level = 3;
-      else if (count >= 3) level = 2;
-      else if (count >= 1) level = 1;
+    // ✅ старт — понедельник ~1 год назад
+    const startDate = startOfWeek(subDays(today, 364), { weekStartsOn: 1 });
 
-      days.push({ date: dateStr, count, level, dayOfWeek: date.getDay() });
+    // ✅ конец — воскресенье текущей недели
+    const endDate = endOfWeek(today, { weekStartsOn: 1 });
+    const endDateStr = format(endDate, 'yyyy-MM-dd');
+
+    const weeks: CalendarWeek[] = [];
+
+    let current = startDate;
+
+    while (format(current, 'yyyy-MM-dd') <= endDateStr) {
+      const week: CalendarWeek = [];
+
+      for (let d = 0; d < 7; d++) {
+        const dateStr = format(current, 'yyyy-MM-dd');
+        const count = activityMap.get(dateStr) || 0;
+
+        let level: 0 | 1 | 2 | 3 | 4 = 0;
+        if (count >= 10) level = 4;
+        else if (count >= 5) level = 3;
+        else if (count >= 3) level = 2;
+        else if (count >= 1) level = 1;
+
+        const isFuture = current > today;
+
+        week.push({
+          date: dateStr,
+          count,
+          level,
+          dayOfWeek: d,
+          isFuture,
+        });
+
+        current = addDays(current, 1);
+      }
+
+      weeks.push(week);
     }
-    return days;
+
+    return weeks;
   }, [habits, tasks]);
 
   if (!settings.showCalendar) return null;
-
-  // Групуємо по тижнях (кожен тиждень — це стовпчик)
-  const weeks = useMemo(() => {
-    const result = [];
-    for (let i = 0; i < calendarData.length; i += 7) {
-      result.push(calendarData.slice(i, i + 7));
-    }
-    return result;
-  }, [calendarData]);
 
   return (
     <section className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-border-light)] p-6 shadow-sm col-span-full">
@@ -86,13 +125,16 @@ export default function ContributionCalendar() {
           <div className="inline-flex flex-col gap-2 min-w-max">
 
             {/* Рядок з назвами місяців */}
-            <MonthLabels weeks={weeks} />
+            <MonthLabels weeks={calendarData} />
 
             <div className="flex gap-3">
               {/* Підписи днів тижня */}
-              <div className="grid grid-rows-7 gap-[3px] pt-[2px]">
-                {['', t('tue'), '', t('thu'), '', t('sat'), ''].map((day, i) => (
-                  <span key={i} className="text-[9px] text-[var(--color-text-muted)] h-[10px] flex items-center">
+              <div className="grid grid-rows-7 gap-[3px]">
+                {WEEK_DAYS.map((day, i) => (
+                  <span
+                    key={i}
+                    className="text-[10px] text-[var(--color-text-muted)] h-[20px] flex items-center"
+                  >
                     {day}
                   </span>
                 ))}
@@ -100,10 +142,10 @@ export default function ContributionCalendar() {
 
               {/* Сама сітка */}
               <div className="grid grid-flow-col gap-[3px]">
-                {weeks.map((week, wIndex) => (
+                {calendarData.map((week, wIndex) => (
                   <div key={wIndex} className="grid grid-rows-7 gap-[3px]">
                     {week.map((day) => (
-                      <ActivityCell key={day.date} day={day} />
+                      <ActivityCell key={day.date} day={day} isToday={day.date === todayStr} />
                     ))}
                   </div>
                 ))}
@@ -118,14 +160,33 @@ export default function ContributionCalendar() {
   );
 }
 
-// --- ПІД-КОМПОНЕНТИ ДЛЯ ЧИСТОТИ ---
-
-function ActivityCell({ day }: { day: any }) {
+function ActivityCell({ day, isToday }: { day: any; isToday: boolean }) {
   return (
     <div
-      className={`w-[10px] h-[10px] rounded-[2px] transition-all duration-300 hover:ring-2 hover:ring-[var(--color-primary)] hover:z-10 cursor-pointer ${LEVEL_COLORS[day.level as keyof typeof LEVEL_COLORS]}`}
-      data-date={day.date}
-      data-count={day.count}
+      className={`
+        w-[20px] h-[20px] md:w-[21px] md:h-[21px]
+        rounded-[2px]
+        transition-all duration-200
+        
+        ${day.isFuture
+        ? 'bg-[var(--color-bg)]/40 border border-[var(--color-border-light)] pointer-events-none'
+        : LEVEL_COLORS[day.level]
+      }
+
+        ${!isToday ? 'hover:ring-2 hover:ring-[var(--color-primary)]' : ''}
+        ${isToday ? 'ring-2 ring-blue-500 dark:ring-blue-400' : ''}
+        hover:ring-2 hover:ring-[var(--color-primary)] hover:z-10
+      `}
+      title={
+        day.isFuture
+          ? ''
+          : `${format(new Date(day.date), 'MMM d, yyyy')} — ${day.count} activities`
+      }
+      // title={
+      //   day.isFuture
+      //     ? 'Future'
+      //     : `${day.date} — ${day.count} activities`
+      // }
     />
   );
 }
@@ -133,27 +194,35 @@ function ActivityCell({ day }: { day: any }) {
 function MonthLabels({ weeks }: { weeks: any[] }) {
   const labels = useMemo(() => {
     const result: { label: string; index: number }[] = [];
-    weeks.forEach((week, i) => {
-      const date = new Date(week[0].date);
-      const month = date.toLocaleDateString('uk-UA', { month: 'short' });
-      if (result.length === 0 || result[result.length - 1].label !== month) {
-        result.push({ label: month, index: i });
-      }
+
+    weeks.forEach((week, weekIndex) => {
+      week.forEach((day: any) => {
+        const date = new Date(day.date);
+
+        // 🔥 ключ: первый день месяца
+        if (date.getDate() === 1) {
+          result.push({
+            label: date.toLocaleDateString('uk-UA', { month: 'short' }),
+            index: weekIndex,
+          });
+        }
+      });
     });
+
     return result;
   }, [weeks]);
 
   return (
-    <div className="relative h-4 ml-8">
-      {labels.map((m, i) => (
-        <span
-          key={i}
-          className="absolute text-[10px] text-[var(--color-text-muted)] font-medium capitalize"
-          style={{ left: `${m.index * 13}px` }}
-        >
-          {m.label}
-        </span>
-      ))}
+    <div className="grid grid-flow-col gap-[3px] ml-[26px]">
+      {weeks.map((_, i) => {
+        const label = labels.find(l => l.index === i);
+
+        return (
+          <div key={i} className="text-[10px] text-[var(--color-text-muted)] h-4">
+            {label?.label}
+          </div>
+        );
+      })}
     </div>
   );
 }

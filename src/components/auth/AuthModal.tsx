@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import { X } from 'lucide-react';
 import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
@@ -14,16 +14,20 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialView?: AuthView;
-  viewValue: AuthView;
+  // viewValue: AuthView;
 }
 
-export default function AuthModal({ isOpen, onClose, viewValue = '', initialView = 'login' }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, initialView = 'login' }: AuthModalProps) {
   const [view, setView] = useState<AuthView>(initialView);
   const { showToast } = useToast(); // Предположим, он есть в контексте
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (isOpen) {
+      setView(initialView);
+    }
+  }, [isOpen, initialView]);
 
-  const mergedViewValue = viewValue ?? view
+  if (!isOpen) return null;
 
   const handleAuth = async (formData: { email: string; password: string; name?: string }, mode: 'login' | 'register') => {
     const supabase = await getSupabaseBrowserClient();
@@ -76,7 +80,7 @@ export default function AuthModal({ isOpen, onClose, viewValue = '', initialView
       }}
     >
       {
-        mergedViewValue === 'profile' ?
+        view === 'profile' ?
           <EditProfileForm/>
           :
         <div
@@ -93,7 +97,7 @@ export default function AuthModal({ isOpen, onClose, viewValue = '', initialView
           {/* Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
             <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>
-              {mergedViewValue === 'login' ? 'Welcome Back' : 'Create Account'}
+              {view === 'login' ? 'Welcome Back' : 'Create Account'}
             </h2>
             <button
               onClick={onClose}
@@ -119,9 +123,9 @@ export default function AuthModal({ isOpen, onClose, viewValue = '', initialView
                 padding: '12px',
                 background: 'none',
                 border: 'none',
-                borderBottom: mergedViewValue === 'login' ? '2px solid var(--color-primary)' : '2px solid transparent',
-                color: mergedViewValue === 'login' ? 'var(--color-primary)' : 'var(--color-text-muted)',
-                fontWeight: mergedViewValue === 'login' ? 600 : 500,
+                borderBottom: view === 'login' ? '2px solid var(--color-primary)' : '2px solid transparent',
+                color: view === 'login' ? 'var(--color-primary)' : 'var(--color-text-muted)',
+                fontWeight: view === 'login' ? 600 : 500,
                 cursor: 'pointer',
                 transition: 'all 0.2s',
               }}
@@ -135,9 +139,9 @@ export default function AuthModal({ isOpen, onClose, viewValue = '', initialView
                 padding: '12px',
                 background: 'none',
                 border: 'none',
-                borderBottom: mergedViewValue === 'register' ? '2px solid var(--color-primary)' : '2px solid transparent',
-                color: mergedViewValue === 'register' ? 'var(--color-primary)' : 'var(--color-text-muted)',
-                fontWeight: mergedViewValue === 'register' ? 600 : 500,
+                borderBottom: view === 'register' ? '2px solid var(--color-primary)' : '2px solid transparent',
+                color: view === 'register' ? 'var(--color-primary)' : 'var(--color-text-muted)',
+                fontWeight: view === 'register' ? 600 : 500,
                 cursor: 'pointer',
                 transition: 'all 0.2s',
               }}
@@ -148,7 +152,7 @@ export default function AuthModal({ isOpen, onClose, viewValue = '', initialView
 
           {/* Content */}
           <div className="modal-content">
-            {mergedViewValue === 'login' ? (
+            {view === 'login' ? (
               <LoginForm
                 onSuccess={onClose}
                 onSubmit={(data) => handleAuth(data, 'login')}

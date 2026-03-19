@@ -27,7 +27,7 @@ export default function Header() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isInitialView, setInitialView] = useState<AuthView>('');
+  const [authModalView, setAuthModalView] = useState<'login' | 'register' | 'profile'>('login');
 
   const tasksCtx = useTasksInternal();
   const habitsCtx = useHabitsInternal();
@@ -267,7 +267,7 @@ export default function Header() {
             <div className={'flex gap-[14px]'}>
               <button
                 onClick={() => {
-                  setInitialView('profile')
+                  setAuthModalView('profile');
                   setShowAuthModal(true)
                 }}
                 className="flex items-center gap-2 p-1 pr-3 rounded-full bg-[var(--color-bg)]
@@ -294,7 +294,13 @@ export default function Header() {
             </div>
 
           ) : (
-            <button className={btnPrimary} onClick={() => setShowAuthModal(true)}>
+            <button
+              className={btnPrimary}
+              onClick={() => {
+                setAuthModalView('login');
+                setShowAuthModal(true);
+              }}
+            >
               <LogIn size={18} />
               <span className="hidden sm:inline">{t('login')}</span>
             </button>
@@ -380,7 +386,12 @@ export default function Header() {
 
       {/*{showSettings && <ProfileModal />}*/}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
-      <AuthModal viewValue={isInitialView} isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      <AuthModal
+        key={authModalView}
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        initialView={authModalView}
+      />
     </>
   );
 }

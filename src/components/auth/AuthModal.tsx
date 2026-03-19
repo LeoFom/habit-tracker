@@ -38,7 +38,8 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
           email: formData.email,
           password: formData.password,
           options: {
-            data: { full_name: formData.name } // Передаем имя в metadata
+            data: { full_name: formData.name }, // Передаем имя в metadata
+            // emailRedirectTo: `${window.location.origin}/welcome`,
           }
         });
         // console.log("register - data",data)

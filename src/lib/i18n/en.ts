@@ -25,6 +25,7 @@ const en: Record<TranslationKeys, string> = {
   yearly: 'Year',
   streak: 'Streak',
   days: 'days',
+  selectDate: 'Select date',
 
   // Tasks
   tasks: 'Tasks',

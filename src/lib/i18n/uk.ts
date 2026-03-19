@@ -23,6 +23,7 @@ const uk = {
   yearly: 'Рік',
   streak: 'Серія',
   days: 'днів',
+  selectDate: 'Оберіть дату',
 
   // Tasks
   tasks: 'Задачі',
